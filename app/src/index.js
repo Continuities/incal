@@ -8,8 +8,8 @@
 import React from "react"
 import ReactDom from "react-dom"
 import App from "@view/App.js"
-
-ReactDom.render(
+const app = document.getElementById('app');
+app && ReactDom.render(
   <App />,
-  document.getElementById('app')
+  app
 );
