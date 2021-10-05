@@ -16,7 +16,13 @@
   },
   "dependencies": {
     "express": "^4.17.1",
+    "express-oauth-server": "^2.0.0",
+    "express-session": "^1.17.2",
     "flow-remove-types": "^2.161.0",
-    "nodemon": "^2.0.13"
+    "nodemon": "^2.0.13",
+    "simple-memory-storage": "waychan23/simple-memory-storage"
+  },
+  "devDependencies": {
+    "flow-bin": "^0.161.0"
   }
 }

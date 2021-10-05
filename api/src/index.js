@@ -6,7 +6,10 @@
  **/
 
 import express from 'express';
-
+import session from 'express-session';
+import OAuthServer from 'express-oauth-server';
+import AuthRouter from './router/auth.js';
+import authModel from './oauth2-model.js';
 
 const port = parseInt(process.env.PORT);
 if (!port || isNaN(port)) {
@@ -14,12 +17,17 @@ if (!port || isNaN(port)) {
 }
 
 const app = express();
-app.use(express.urlencoded());
-app.use(express.json({
-  type: [ 'application/json' ]
-}));
 
-app.get('/', async (req, res) => {
+const somethingAsync = async () => 'FOOOO';
+
+const oauth = new OAuthServer({ model: authModel });
+
+app.use(express.json({ type: [ 'application/json' ] }));
+app.use(express.urlencoded({ extended: true }));
+app.use(session({ secret: 'nyanyanyanyan' }));
+app.use('/oauth', AuthRouter(oauth));
+
+app.get('/', oauth.authorize(), async (req, res) => {
   res.status(200).json({ msg: 'TODO' });
 });
 

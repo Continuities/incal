@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+  <head></head>
+  <body>
+    <form action='{loginUrl}' method='POST'>
+      <input type='email' placeholder='email' name='email' />
+      <input type='password' placeholder='password' name='password' />
+      <input type="hidden" name="callback_uri" value="{callbackUri}">
+      <button type='submit'>Login</button>
+    </form>
+  </body>
+</html>
