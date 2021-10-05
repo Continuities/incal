@@ -1,0 +1,13 @@
+[ignore]
+
+[include]
+
+[libs]
+./flow-typed
+
+[options]
+module.name_mapper='^@view' ->'<PROJECT_ROOT>/src/view'
+module.name_mapper='^@static' ->'<PROJECT_ROOT>/static'
+module.name_mapper='^@service' ->'<PROJECT_ROOT>/src/service'
+
+[strict]
