@@ -44,20 +44,18 @@ const refreshStore = new MemoryStore();
 const authStore = new MemoryStore();
 
 const populate = async <T> (token:any):Promise<T> => {
-  if (typeof token.client === 'string') {
-    token.client = await getClient(token.client);
-  }
-  if (typeof token.user === 'string') {
-    token.user = await getUser(token.user);
-  }
-  return token;
+  return {
+    ...token,
+    client: typeof token.client === 'string' ? await getClient(token.client) : token.client,
+    user: typeof token.user === 'string' ? await getUser(token.user) : token.user,
+  };
 };
 
 const depopulate = (token:{ ...BaseAuth }):any => {
   return {
     ...token,
-    client: token.client.id,
-    user: token.user.username
+    client: typeof token.client === 'string' ? token.client : token.client.id,
+    user: typeof token.user === 'string' ? token.user : token.user.email
   };
 };
 

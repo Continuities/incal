@@ -6,16 +6,21 @@
  **/
 
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import { 
   CssBaseline 
 } from '@material-ui/core';
+import { AuthProvider } from "@service/auth";
+import ApiTest from '@view/ApiTest';
 
 const App = ():React$Node => {
   return (
-    <>
-      <CssBaseline />
-      <div>HI</div>
-    </>
+    <BrowserRouter>
+      <AuthProvider>
+        <CssBaseline />
+        <ApiTest />
+      </AuthProvider>
+    </BrowserRouter>
   );
 };
 

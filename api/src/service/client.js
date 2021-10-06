@@ -7,7 +7,7 @@
 
 export type Client = {|
   id: string,
-	clientSecret: string,
+	clientSecret: ?string,
 	name: string,
 	grants: Array<string>,
 	redirectUris: Array<string>,
@@ -17,13 +17,13 @@ export type Client = {|
 |};
 
 const CLIENTS:{ [string]: Client } = {
-  'test': {
-    id: 'test',
-    clientSecret: 'test_secret',
-    name: 'Test Client',
+  'spa': {
+    id: 'spa',
+    name: 'Test SPA',
+    clientSecret: null,
     scopes: [ 'user_info:read' ],
-    grants: [ 'authorization_code', 'refresh_token' ],
-    redirectUris: [ 'www.google.com '] // TODO
+    grants: [ 'authorization_code', 'refresh_code' ],
+    redirectUris: [ 'http://localhost:3000' ] // TODO
   }
 };
 

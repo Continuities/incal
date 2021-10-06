@@ -6,6 +6,7 @@
  **/
 
 import express from 'express';
+import cors from 'cors';
 import session from 'express-session';
 import OAuthServer from 'express-oauth-server';
 import AuthRouter from './router/auth.js';
@@ -22,13 +23,14 @@ const somethingAsync = async () => 'FOOOO';
 
 const oauth = new OAuthServer({ model: authModel });
 
+app.use(cors());
 app.use(express.json({ type: [ 'application/json' ] }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: 'nyanyanyanyan' }));
 app.use('/oauth', AuthRouter(oauth));
 
-app.get('/', oauth.authorize(), async (req, res) => {
-  res.status(200).json({ msg: 'TODO' });
+app.get('/', oauth.authenticate({ scope: 'user_info:read' }), async (req, res) => {
+  res.status(200).json({ msg: 'IT WORKED!' });
 });
 
 app.listen(port, () => console.log(`API started on port ${port}`));

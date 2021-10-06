@@ -8,6 +8,7 @@
 import express from 'express';
 import { promises as fs } from 'fs';
 import { getClient } from '../service/client.js';
+import { getUser } from '../service/user.js';
 
 import type { Router } from 'express';
 
@@ -19,7 +20,7 @@ const forwardToLogin = async (res, callbackUri) =>
   forwardToView(res, 'login', {
     //when logged in successfully, redirect back to the original request url
     callbackUri: Buffer.from(callbackUri, 'utf-8').toString('base64'),
-    loginUrl: '/oauth/login'
+    loginUrl: 'http://localhost:8080/oauth/login'
   });
 
 const forwardToView = async (res, viewName:string, viewModel:{[string]:string}) => {
@@ -30,37 +31,48 @@ const forwardToView = async (res, viewName:string, viewModel:{[string]:string}) 
   const rendered = Object
     .entries(viewModel)
     .reduce((html, variable) => html.replace(
-        new RegExp(`{${variable[0]}}`, 'g'), 
+        new RegExp(`%{${variable[0]}}`, 'g'), 
         variable[1]
       ), template);
 
 	res.status(200).send(rendered);
 };
 
+const isExpired = (time) => Date.now() >= time;
+
 export default (oauth:any) => {
   const router:Router<> = express.Router();
 
   const checkLogin = async (req, res, next) => {
-    const { client_id, csrfToken, scope } = req.query;
-    const { user, userConfirmCsrfToken } = req.session;
-
-    // TODO: Scope security
-    const scopes = scope
-      .split(',')
-      .map(s => s.trim());
+    const { 
+      client_id, 
+      csrfToken, 
+      scope, 
+      agree, 
+      deny, 
+      logout 
+    } = req.query;
+    const { 
+      user, 
+      userConfirmCsrfToken 
+    } = req.session;
     
-    if (!client_id) {
+    if (!client_id || !scope) {
       return res.sendStatus(400);
     }
-    const client = getClient(client_id);
+    const client = await getClient(client_id);
     if (!client) {
       return res.sendStatus(401);
     }
 
+    const scopes = scope
+      .split(',')
+      .map(s => s.trim());
+
     const requestUrl = removeUserAction(getRequestUrl(req));
 
     if (!user) {
-      return await forwardToLogin(res, requestUrl);
+      return forwardToLogin(res, requestUrl);
     }
     
     if (csrfToken && 
@@ -72,15 +84,15 @@ export default (oauth:any) => {
       if (deny) {
         await forwardToView(res, 'user-deny', {
           'clientName': client.name,
-          'username': user.username
+          'email': user.email
         });
       } 
       else if (logout) {
-        ctx.user = null;
-        return await forwardToLogin(res, requestUrl);
+        req.session.user = null;
+        return forwardToLogin(res, requestUrl);
       } 
       else {
-        await next();
+        return next();
       }
 
       return;
@@ -97,8 +109,8 @@ export default (oauth:any) => {
       'oauthUri': requestUrl,
       'csrfToken': sessCsrfToken.token,
       'clientName': client.name,
-      'username': user.username,
-      'scopes': scopes
+      'firstname': user.firstname,
+      'scope': scope
     });
   };
 
@@ -114,8 +126,7 @@ export default (oauth:any) => {
     }
     const callbackUri = Buffer.from(callback_uri, 'base64').toString('utf-8');
 
-    // TODO: Actual user lookup
-    const user = { username: email };
+    const user = await getUser(email);
     if (!user) {
       return forwardToLogin(req, callbackUri);
     }
@@ -125,19 +136,28 @@ export default (oauth:any) => {
     res.redirect(callbackUri);
   });
 
-  router.get('/authorize', checkLogin, oauth.authorize({
-    //implement a handle(request, response):user method to get the authenticated user (aka. the logged-in user)
-    //Note: this is where the node-oauth2-server get to know what the currently logined-in user is.
-    authenticateHandler: {
-      handle: (req, res) => !req.session.user ? null : ({ 
-        username: req.user.username 
-      })
-    }
-  }));
+  router.get('/authorize', checkLogin, async (req, res, next) => {
+    const authResult = await (oauth.authorize({
+      // provide the session user to oauth-server
+      authenticateHandler: {
+        handle: req => req.session.user
+      }
+    })(req, res));
+    return next();
+  });
 
   router.post('/token', async (req, res) => {
-    // TODO
-    res.sendStatus(501);
+    try {
+      const token = await oauth.token({
+        requireClientAuthentication: { 
+          authorization_code: false 
+        }
+      })(req, res);
+      return res.status(200).json(token);
+    }
+    catch {
+      return res.status(500).json(err)
+    }
   });
 
   return router;

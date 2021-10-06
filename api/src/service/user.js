@@ -6,14 +6,19 @@
  **/
 
 export type User = {|
-  // TODO
-  username: string
+  email: string,
+  firstname: string,
+  lastname: string,
+  sponsors: Array<string>
 |};
 
-export const getUser = async (id:string) => {
-  // TODO
+export const getUser = async (email:string):Promise<?User> => {
+  // TODO: actual lookup
   return {
-    username: id
+    email,
+    firstname: 'Test',
+    lastname: 'User',
+    sponsors: ['foo@foo.com', 'bar@bar.com', 'baz@baz.com']
   };
 };
 

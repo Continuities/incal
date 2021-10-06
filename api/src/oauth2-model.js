@@ -38,7 +38,7 @@ export default {
     *         {String} token.scope - access scope of this access token
     *         {Object} token.client - the oauth client
     *         {String} token.client.id - string id of the oauth client
-    *         {Object} token.user - the user which this access token represents, this data structure of the user object is not part of the Model Specification, and what it should be is completely up to you. In this example, we use { username: 'someUserName' } where the 'username' field is used to uniquely identify an user in the user database.
+    *         {Object} token.user - the user which this access token represents, this data structure of the user object is not part of the Model Specification, and what it should be is completely up to you.
     */
     getAccessToken: async (accessToken:string):Promise<?AccessToken> => getAccessToken(accessToken),
 
@@ -53,7 +53,7 @@ export default {
     *        {Object} client - the client object
     *        {String} client.id - the id of the client
     *        {Object} user - the user object
-    *        {String} user.username - identifier of the user
+    *        {String} user.email - identifier of the user
     */
     getRefreshToken: async (refreshToken:string) => getRefreshToken(refreshToken),
 
@@ -68,7 +68,7 @@ export default {
     *         {Object} client - the client object
     *         {String} client.id - the client id
     *         {Object} user - the user object
-    *         {String} user.username - the user identifier
+    *         {String} user.email - the user identifier
     */
     getAuthorizationCode: async (authCode:string) => getAuthorisationCode(authCode),
 
@@ -83,7 +83,7 @@ export default {
     *         {Number} [accessTokenLifetime=3600] - define the lifetime of an access token in seconds, default is 1 hour
     *         {Number} [refreshTokenLifetime=3600 * 24 * 14] - define the lifetime of an refresh token in seconds, default is 2 weeks
     */
-    getClient: async (clientId:string, clientSecret:string) => {
+    getClient: async (clientId:string, clientSecret:?string = null) => {
       const client = await getClient(clientId);
       if (!client || client.clientSecret !== clientSecret) {
         return null;
@@ -102,14 +102,14 @@ export default {
     * @param {Object} client - the client object - @see OauthModel.prototype.getClient
     * @param {String} client.id - the client id
     * @param {Object} user - the user object @see OauthModel.prototype.getAccessToken
-    * @param {String} username - the user identifier
+    * @param {String} user.email - the user identifier
     * @return {Object} token - the token object saved, same as the parameter 'token'
     */
     saveToken: async (token:any, client:any, user:any) => {
 
       const commonInfo = {
         client: client.id,
-        user: user.username,
+        user: user.email,
         scope: token.scope
       };
 
@@ -143,7 +143,7 @@ export default {
     * @param {Object} client - the client object
     * @param {String} client.id - the client id
     * @param {Object} user - the user object
-    * @param {String} user.username - the user identifier
+    * @param {String} user.email - the user identifier
     * @return {Object} code - the code object saved
     */
     saveAuthorizationCode: async (code:$Shape<AuthorisationCode>, client:Client, user:User) => {
@@ -155,7 +155,6 @@ export default {
       };
 
       await saveAuthorisationCode(savedCode);
-
       return savedCode;
     },
 
@@ -170,7 +169,7 @@ export default {
     * @param {Object} token.client - the client object
     * @param {String} token.client.id - the client id
     * @param {Object} token.user - the user object
-    * @param {String} token.user.username - the user identifier
+    * @param {String} token.user.email - the user identifier
     * @return {Boolean} - true if the token was successfully revoked, false if the token cound not be found
     */
     revokeToken: async (token:$Shape<RefreshToken>) => revokeRefreshToken(token),
@@ -185,7 +184,7 @@ export default {
     * @param {Object} code.client - the client object
     * @param {String} code.client.id - the client id
     * @param {Object}  code.user - the user object
-    * @param {String} code.user.username - the user identifier
+    * @param {String} code.user.email - the user identifier
     * @return {Boolean} - true if the code is revoked successfully,false if the could not be found
     */
     revokeAuthorizationCode: async (code:$Shape<AuthorisationCode>) => revokeAuthorisationCode(code),
@@ -195,7 +194,7 @@ export default {
     * for example, the client requests the oauth server for an access token of the 'user_info:read,user_info_write' scope, 
     * but the oauth server determine by this method that only the 'user_info:read' scope should be granted.
     * @param {Object} user - the user whose data the client wants to access
-    * @param {String} user.username - the user identifier
+    * @param {String} user.email - the user identifier
     * @param {Object} userClient - the oauth client
     * @param {String} userClient.id - the client id
     * @param {String} scope - the scopes which the client requested for
@@ -230,7 +229,7 @@ export default {
     * @param {Object} accessToken.client - the client object
     * @param {String} accessToken.client.id - the client id
     * @param {Object} accessTokne.user - the user object
-    * @param {String} accessToken.user.username - the user identifier
+    * @param {String} accessToken.user.email - the user identifier
     * @param {String} scope - the scope declared for the resources
     * @return {Boolean} - true if the access token has sufficient access scopes for the resources
     */
