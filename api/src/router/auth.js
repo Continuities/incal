@@ -7,10 +7,12 @@
 
 import express from 'express';
 import { promises as fs } from 'fs';
+import bcrypt from 'bcrypt';
 import { getClient } from '../service/client.js';
-import { getUser } from '../service/user.js';
+import { getUser, saveUser } from '../service/user.js';
 
 import type { Router } from 'express';
+import type { User } from '../service/user.js';
 
 const CSRF_TOKEN_EXPIRES_IN = 1000 * 60 * 2;// 2 minutes
 
@@ -20,7 +22,8 @@ const forwardToLogin = async (res, callbackUri) =>
   forwardToView(res, 'login', {
     //when logged in successfully, redirect back to the original request url
     callbackUri: Buffer.from(callbackUri, 'utf-8').toString('base64'),
-    loginUrl: 'http://localhost:8080/oauth/login'
+    loginUrl: `${process.env.SERVER_URI}/oauth/login`,
+    registerUrl: `${process.env.SERVER_URI}/oauth/register`
   });
 
 const forwardToView = async (res, viewName:string, viewModel:{[string]:string}) => {
@@ -114,6 +117,40 @@ export default (oauth:any) => {
     });
   };
 
+  router.post('/register', async (req, res) => {
+    const { 
+      callback_uri, 
+      email,
+      firstname,
+      lastname,
+      password 
+    } = req.body;
+
+    if (!callback_uri || !email || !password || !firstname || !lastname){
+      return res.sendStatus(400);
+    }
+    const callbackUri = Buffer.from(callback_uri, 'base64').toString('utf-8');
+    const saltRounds = parseInt(process.env.SALT_ROUNDS);
+    if (isNaN(saltRounds)) {
+      throw 'Non-numeric SALT_ROUNDS specified';
+    }
+    const hash = await bcrypt.hash(password, saltRounds);
+    try {
+      await saveUser({
+        email,
+        firstname,
+        lastname,
+        hash,
+        sponsors: []
+      });
+    }
+    catch (e) {
+      return res.status(500).json(e)
+    }
+
+    return forwardToLogin(res, callbackUri);
+  });
+
   router.post('/login', async (req, res) => {
     const { 
       callback_uri, 
@@ -126,9 +163,9 @@ export default (oauth:any) => {
     }
     const callbackUri = Buffer.from(callback_uri, 'base64').toString('utf-8');
 
-    const user = await getUser(email);
-    if (!user) {
-      return forwardToLogin(req, callbackUri);
+    const user:?User = await getUser(email);
+    if (!user || !(await bcrypt.compare(password, user.hash))) {
+      return forwardToLogin(res, callbackUri);
     }
 
     // login successfully

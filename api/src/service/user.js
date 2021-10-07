@@ -5,23 +5,25 @@
  * @flow
  **/
 
+import collection from './db.js';
+
 export type User = {|
   email: string,
   firstname: string,
   lastname: string,
-  sponsors: Array<string>
+  sponsors: Array<string>,
+  hash: string
 |};
 
+const COLLECTION = 'user';
+
 export const getUser = async (email:string):Promise<?User> => {
-  // TODO: actual lookup
-  return {
-    email,
-    firstname: 'Test',
-    lastname: 'User',
-    sponsors: ['foo@foo.com', 'bar@bar.com', 'baz@baz.com']
-  };
+  const users = await collection(COLLECTION);
+  return users.findOne({ email });
 };
 
-export const saveUser = async () => {
-  return 'TODO';
+export const saveUser = async (user:User):Promise<User> => {
+  const users = await collection(COLLECTION);
+  await users.insertOne(user);
+  return user;
 };

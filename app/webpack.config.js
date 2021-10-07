@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 
@@ -46,6 +47,13 @@ module.exports = {
     }
   },
   plugins: [
+    new webpack.EnvironmentPlugin([
+      'NODE_ENV', 
+      'AUTH_URI',
+      'TOKEN_URI',
+      'APP_URI',
+      'API_URI'
+    ]),
     new HtmlWebpackPlugin({ 
       template: './static/index.html',
       title: 'authWeb'

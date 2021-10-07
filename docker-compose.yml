@@ -1,0 +1,50 @@
+version: '3'
+
+volumes:
+  data-volume:
+
+services:
+
+  nginx:
+    build:
+      context: ./nginx
+    image: maker-nginx
+    ports:
+      - 80:80
+    depends_on:
+      - api
+      - app
+
+  app:
+    build: 
+      context: ./app
+    image: authweb-app
+    environment:
+      - EXTRA_WEBPACK_DEV_SERVER_ARGS
+      - PORT=3000
+      - AUTH_URI=http://localhost/oauth/authorize
+      - TOKEN_URI=http://localhost/oauth/token
+      - APP_URI=http://localhost
+      - API_URI=http://localhost
+  api:
+    build:
+      context: ./api
+    image: authweb-api
+    environment:
+      - PORT=8080
+      - DB_URI=mongodb://db
+      - DB_NAME=app
+      - SERVER_URI=http://localhost
+      - SALT_ROUNDS=10
+    links:
+      - db:db
+    depends_on:
+      - db
+
+  db:
+    container_name: authweb-db
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_DATABASE=app
+    volumes:
+      - data-volume:/data/db

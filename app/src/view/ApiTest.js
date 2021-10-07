@@ -5,29 +5,22 @@
  * @flow
  **/
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Container, Button, Typography } from '@material-ui/core';
+import { useGet } from '@service/api';
 import { useToken } from '@service/auth';
 
 const ApiTest = ():React$Node => {
-  const [ token, logout ] = useToken();
-  const [ msg, setMsg ] = useState('');
-  useEffect(() => {
-    if (!token) {
-      return;
+  const [, logout ] = useToken();
+  const response = useGet('/');
+
+  const msg = useMemo(() => {
+    switch (response.status) {
+      case 'pending': return 'Loading...';
+      case 'error': return `Error! ${response.error}`;
+      case 'success': return response.result.msg;
     }
-
-    fetch('http://localhost:8080/', {
-      headers: {
-        Authorization: `${token.token_type} ${token.access_token}`
-      }
-    })
-      .then(r => r.json())
-      .then(j => { 
-        setMsg(j.msg); 
-      });
-
-  }, [ token ]);
+  }, [ response ]);
 
   return (
     <Container maxWidth='sm'>

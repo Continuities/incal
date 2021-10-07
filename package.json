@@ -1,0 +1,23 @@
+{
+  "name": "authweb",
+  "version": "0.1.0",
+  "repository": "git@github.com:Continuities/authweb.git",
+  "author": "Michael Townsend <michael@doublespeakgames.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "yarn build && docker-compose up -d",
+    "build": "docker-compose build",
+    "prod:start": "yarn prod:build && docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d",
+    "prod:build": "docker-compose -f docker-compose.yml -f docker-compose.prod.yml build",
+    "stop": "docker-compose down && docker-compose rm -vf",
+    "logs": "docker-compose logs -f",
+    "ps": "docker-compose ps",
+    "restart": "docker-compose restart",
+    "uninstall": "docker-compose down --rmi all",
+    "connect:api": "docker-compose exec api bash",
+    "connect:app": "docker-compose exec app bash",
+    "connect:db": "docker-compose exec db mongo",
+    "connect:nginx": "docker-compose exec nginx bash"
+  }
+}

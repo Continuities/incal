@@ -23,7 +23,7 @@ const CLIENTS:{ [string]: Client } = {
     clientSecret: null,
     scopes: [ 'user_info:read' ],
     grants: [ 'authorization_code', 'refresh_code' ],
-    redirectUris: [ 'http://localhost:3000' ] // TODO
+    redirectUris: [ process.env.SERVER_URI || '' ]
   }
 };
 
