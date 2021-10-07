@@ -187,7 +187,8 @@ export default (oauth:any) => {
     try {
       const token = await oauth.token({
         requireClientAuthentication: { 
-          authorization_code: false 
+          authorization_code: false,
+          refresh_token: false
         }
       })(req, res);
       return res.status(200).json(token);

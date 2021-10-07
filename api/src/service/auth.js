@@ -44,7 +44,7 @@ const refreshStore = new MemoryStore();
 const authStore = new MemoryStore();
 
 const populate = async <T> (token:any):Promise<T> => {
-  return {
+  return token && {
     ...token,
     client: typeof token.client === 'string' ? await getClient(token.client) : token.client,
     user: typeof token.user === 'string' ? await getUser(token.user) : token.user,
@@ -52,7 +52,7 @@ const populate = async <T> (token:any):Promise<T> => {
 };
 
 const depopulate = (token:{ ...BaseAuth }):any => {
-  return {
+  return token && {
     ...token,
     client: typeof token.client === 'string' ? token.client : token.client.id,
     user: typeof token.user === 'string' ? token.user : token.user.email

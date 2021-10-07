@@ -19,5 +19,6 @@
     "connect:app": "docker-compose exec app bash",
     "connect:db": "docker-compose exec db mongo",
     "connect:nginx": "docker-compose exec nginx bash"
-  }
+  },
+  "dependencies": {}
 }

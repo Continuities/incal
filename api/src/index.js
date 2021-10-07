@@ -10,6 +10,7 @@ import cors from 'cors';
 import session from 'express-session';
 import OAuthServer from 'express-oauth-server';
 import AuthRouter from './router/auth.js';
+import ApiRouter from './router/api.js';
 import authModel from './oauth2-model.js';
 
 const port = parseInt(process.env.PORT);
@@ -27,11 +28,10 @@ app.use(cors());
 app.use(express.json({ type: [ 'application/json' ] }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: 'nyanyanyanyan' }));
+
 app.use('/oauth', AuthRouter(oauth));
 
-app.get('/', oauth.authenticate({ scope: 'user_info:read' }), async (req, res) => {
-  res.status(200).json({ msg: 'IT WORKED!' });
-});
+app.use('/', oauth.authenticate({ scope: 'user_info:read' }), ApiRouter());
 
 app.listen(port, () => console.log(`API started on port ${port}`));
 

@@ -11,7 +11,7 @@
     "flow:check": "flow check",
     "flow:build": "flow-remove-types ./src/ -d ./dist/ --all --pretty",
     "build": "yarn eslint && yarn flow:check && yarn flow:build",
-    "serve": "yarn flow:build && PORT=8080 node --inspect ./dist/index.js",
+    "serve": "yarn flow:build && PORT=8080 node --inspect=0.0.0.0:9229 ./dist/index.js",
     "start": "nodemon --watch src -x \"yarn serve\""
   },
   "dependencies": {

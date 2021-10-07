@@ -13,8 +13,13 @@
     "start": "yarn build && nodemon server.js"
   },
   "dependencies": {
+    "@emotion/react": "^11.4.1",
+    "@emotion/styled": "^11.3.0",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
+    "@mui/icons-material": "^5.0.3",
+    "@mui/material": "^5.0.3",
+    "@mui/system": "^5.0.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-oauth-popup": "^1.0.5",

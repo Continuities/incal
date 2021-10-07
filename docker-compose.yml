@@ -36,6 +36,7 @@ services:
       - DB_NAME=app
       - SERVER_URI=http://localhost
       - SALT_ROUNDS=10
+      - MAX_SPONSORS=3
     links:
       - db:db
     depends_on:
