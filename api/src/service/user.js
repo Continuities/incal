@@ -79,7 +79,7 @@ export const removeSponsor = async (user:string, sponsor:string) => {
 
 export const getSponsees = async (email:string):Promise<Array<User>> => {
   const users = await collection(COLLECTION);
-  const sponsees = await users.find({ sponsors: { email }});
+  const sponsees = await users.find({ sponsors: email });
   return (await sponsees.toArray()).map(withTags);
 };
 
@@ -87,4 +87,14 @@ export const getAnchors = async ():Promise<Array<UserStub>> => {
   const users = await collection(COLLECTION);
   const anchors = await users.find({ isAnchor: true });
   return (await anchors.toArray()).map(withTags).map(toStub);
+};
+
+export const addAnchor = async (email:string) => {
+  const users = await collection(COLLECTION);
+  await users.updateOne({ email }, { $set: { isAnchor: true, sponsors: [] }});
+};
+
+export const removeAnchor = async (email:string) => {
+  const users = await collection(COLLECTION);
+  await users.updateOne({ email }, { $set: { isAnchor: false }});
 };

@@ -50,7 +50,9 @@ export type ApiResponse<T> =
 export type UserAction = 
   'sponsor' | 
   'request_sponsor' |
-  'remove_sponsor';
+  'remove_sponsor' |
+  'add_anchor' |
+  'remove_anchor';
 
 export type UserTag =
   'anchor' |

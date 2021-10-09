@@ -11,7 +11,9 @@ import {
   getUsers, 
   addSponsor,
   removeSponsor,
-  getAnchors
+  getAnchors,
+  addAnchor,
+  removeAnchor
 } from '../service/user.js';
 import { sanitise } from '../service/db.js';
 import { canSponsor } from '../service/sponsorship.js';
@@ -44,6 +46,10 @@ export default () => {
     await canSponsor(user, currentUser) && actions.push('request_sponsor');
     await canSponsor(currentUser, user) && actions.push('sponsor');
     user.sponsors.find(s => s.email === currentUser.email) && actions.push('remove_sponsor');
+    if (currentUser.tags.includes('anchor')) {
+      user.tags.includes('anchor') && actions.push('remove_anchor');
+      !user.tags.includes('anchor') && actions.push('add_anchor');
+    }
 
     res.json(
       sanitise(
@@ -88,7 +94,7 @@ export default () => {
       return res.sendStatus(400);
     }
 
-    addSponsor(email, sponsorEmail);
+    await addSponsor(email, sponsorEmail);
     res.sendStatus(204);
   });
 
@@ -108,7 +114,39 @@ export default () => {
       return res.sendStatus(400);
     }
 
-    removeSponsor(email, sponsorEmail);
+    await removeSponsor(email, sponsorEmail);
+    res.sendStatus(204);
+  });
+
+  // Make someone an anchor
+  router.put('/anchors/:email', async (req, res) => {
+    const { email } = req.params;
+    if (!req.session.user.tags.includes('anchor')) {
+      return res.sendStatus(401);
+    }
+
+    const user = await getUser(email);
+    if (!user || user.tags.includes('anchor')) {
+      return res.sendStatus(400);
+    }
+
+    await addAnchor(email);
+    res.sendStatus(204);
+  });
+
+  // Remoke an anchor
+  router.delete('/anchors/:email', async (req, res) => {
+    const { email } = req.params;
+    if (!req.session.user.tags.includes('anchor')) {
+      return res.sendStatus(401);
+    }
+
+    const user = await getUser(email);
+    if (!user || !user.tags.includes('anchor')) {
+      return res.sendStatus(400);
+    }
+
+    await removeAnchor(email);
     res.sendStatus(204);
   });
 

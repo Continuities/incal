@@ -27,7 +27,8 @@ import {
   PersonAdd,
   PersonRemove,
   ConnectWithoutContact,
-  Anchor
+  Anchor,
+  Close
 } from '@mui/icons-material';
 import { useGet, ApiResolver, doPut, doDelete } from '@service/api';
 import { useCurrentUser, useToken } from '@service/auth';
@@ -60,19 +61,17 @@ const Profile = ({ user, refresh }: Props):React$Node => {
 
   const canSponsor = userActions.has('sponsor') || userActions.has('remove_sponsor');
 
-  const addSponsor = async () => {
+  const button = func => async () => {
     setDisableButtons(true);
-    await doPut(`/user/${email}/sponsors/${me?.email || ''}`, token);
+    await func();
     refresh();
     setDisableButtons(false);
   };
 
-  const remSponsor = async () => {
-    setDisableButtons(true);
-    await doDelete(`/user/${email}/sponsors/${me?.email || ''}`, token);
-    refresh();
-    setDisableButtons(false);
-  };
+  const addSponsor = button(() => doPut(`/user/${email}/sponsors/${me?.email || ''}`, token));
+  const remSponsor = button(() => doDelete(`/user/${email}/sponsors/${me?.email || ''}`, token));
+  const addAnchor = button(() => doPut(`/anchors/${email}`, token));
+  const removeAnchor = button(() => doDelete(`/anchors/${email}`, token));
 
   return (
     <Grid container 
@@ -109,7 +108,6 @@ const Profile = ({ user, refresh }: Props):React$Node => {
               </IconButton>
             </Tooltip>
           )}
-
           { !isMe && !userActions.has('remove_sponsor') && (
             <Tooltip title='Offer sponsorship'>
               <IconButton 
@@ -133,6 +131,20 @@ const Profile = ({ user, refresh }: Props):React$Node => {
                 disabled={!userActions.has('request_sponsor')}
               >
                 <ConnectWithoutContact />
+              </IconButton>
+            </Tooltip>
+          )}
+          { !isMe && userActions.has('add_anchor') && (
+            <Tooltip title='Make anchor'>
+              <IconButton onClick={addAnchor}>
+                <Anchor />
+              </IconButton>
+            </Tooltip>
+          )}
+          { !isMe && userActions.has('remove_anchor') && (
+            <Tooltip title='Revoke anchor'>
+              <IconButton onClick={removeAnchor}>
+                <Close />
               </IconButton>
             </Tooltip>
           )}
