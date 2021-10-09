@@ -16,7 +16,11 @@ import type { Token } from '@service/auth';
 
 const API = process.env.API_URI || '';
 
-export type ApiStatus = 'success' | 'success_empty' | 'error' | 'pending';
+export type ApiStatus = 
+  'success' | 
+  'success_empty' | 
+  'error' | 
+  'pending';
 
 export type ApiSuccessEmpty = {|
   status: 'success_empty'
@@ -43,15 +47,26 @@ export type ApiResponse<T> =
   ApiError |
   ApiPending;
 
+export type UserAction = 
+  'sponsor' | 
+  'request_sponsor' |
+  'remove_sponsor';
+
+export type UserTag =
+  'anchor' |
+  'orphan';
+
 export type UserStub = {|
   email: string,
   firstname: string,
-  lastname: string
+  lastname: string,
+  tags: Array<UserTag>
 |};
 
 export type User = {|
   ...UserStub,
-  sponsors: Array<UserStub>
+  sponsors: Array<UserStub>,
+  actions: Array<UserAction>
 |};
 
 const doFetch = async <T> (query, method, token, signal): Promise<ApiResponse<T>> => {
@@ -130,7 +145,7 @@ export const ApiResolver = <T>({ children, data }: ResolverProps<T>):React$Node 
   return children(data);
 };
 
-export const useGet = <T> (query:string, send:bool = true):ApiResponse<T> => {
+export const useGet = <T> (query:string, resend:number = 0):ApiResponse<T> => {
   const [ response, setResponse ] = useState({ status: 'pending' });
   const [ token, refreshToken ] = useToken();
 
@@ -141,15 +156,12 @@ export const useGet = <T> (query:string, send:bool = true):ApiResponse<T> => {
   }, [ response.status ])
 
   useEffect(() => {
-    if (!send) {
-      return;
-    }
     const controller = new AbortController();
     doGet(query, token, controller.signal)
       .then(setResponse)
       .catch(() => { /* Ignore obsolete requests */ });
     return () => controller.abort();
-  }, [ send, query, token ]);
+  }, [ resend, query, token ]);
 
   return response;
 };

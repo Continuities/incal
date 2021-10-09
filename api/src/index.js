@@ -12,6 +12,7 @@ import OAuthServer from 'express-oauth-server';
 import AuthRouter from './router/auth.js';
 import ApiRouter from './router/api.js';
 import authModel from './oauth2-model.js';
+import { authorise } from './service/sponsorship.js';
 
 const port = parseInt(process.env.PORT);
 if (!port || isNaN(port)) {
@@ -31,7 +32,10 @@ app.use(session({ secret: 'nyanyanyanyan' }));
 
 app.use('/oauth', AuthRouter(oauth));
 
-app.use('/', oauth.authenticate({ scope: 'user_info:read' }), ApiRouter());
+app.use('/', 
+  oauth.authenticate({ scope: 'user_info:read' }),
+  authorise,
+  ApiRouter());
 
 app.listen(port, () => console.log(`API started on port ${port}`));
 

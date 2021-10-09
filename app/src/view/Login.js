@@ -45,7 +45,7 @@ const Login = ({ onLogin }: Props):React$Node => {
       response_type: 'code',
       client_id: ClientConfig.id,
       state,
-      scope: 'user_info:read',
+      scope: 'user_info:read,user_info:write',
       redirect_uri: ClientConfig.redirectUri,
       code_challenge: challenge,
       code_challenge_method: 'S256'

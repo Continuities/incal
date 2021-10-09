@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
   <head>
+    <title>%{community} - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
       html {
         box-sizing: border-box;
@@ -32,7 +34,7 @@
   </head>
   <body>
     <form id='login' action='%{loginUrl}' method='POST'>
-      <h1>Log in to authWeb</h1>
+      <h1>Log in to %{community}</h1>
       <input type='email' placeholder='email' name='email' />
       <input type='password' placeholder='password' name='password' />
       <input type="hidden" name="callback_uri" value="%{callbackUri}">
@@ -40,7 +42,7 @@
       <a id='register-tab'>Register</a>
     </form>
     <form class='hidden' id='register' action='%{registerUrl}' method='POST'>
-      <h1>Register a new authWeb account</h1>
+      <h1>Register a new %{community} account</h1>
       <input type='email' placeholder='email' name='email' />
       <input type='password' placeholder='password' name='password' />
       <input type='text' placeholder='first name' name='firstname' />

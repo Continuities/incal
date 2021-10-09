@@ -14,13 +14,14 @@ import { getUser, saveUser } from '../service/user.js';
 import type { Router } from 'express';
 import type { User } from '../service/user.js';
 
+const COMMUNITY_NAME = process.env.COMMUNITY_NAME || 'authWeb';
 const CSRF_TOKEN_EXPIRES_IN = 1000 * 60 * 2;// 2 minutes
 
 const getRequestUrl = req => `${req.protocol}://${req.get('host')}${req.originalUrl}`;
 const removeUserAction =  url => url.replace(/&?(deny|agree|logout|csrfToken)=[^&]+/g, '');
 const forwardToLogin = async (res, callbackUri) => 
   forwardToView(res, 'login', {
-    //when logged in successfully, redirect back to the original request url
+    community: COMMUNITY_NAME,
     callbackUri: Buffer.from(callbackUri, 'utf-8').toString('base64'),
     loginUrl: `${process.env.SERVER_URI}/oauth/login`,
     registerUrl: `${process.env.SERVER_URI}/oauth/register`
@@ -68,7 +69,7 @@ export default (oauth:any) => {
       return res.sendStatus(401);
     }
 
-    const scopes = scope
+    const scopes = decodeURIComponent(scope)
       .split(',')
       .map(s => s.trim());
 
@@ -108,12 +109,22 @@ export default (oauth:any) => {
 
     req.session.userConfirmCsrfToken = sessCsrfToken;
 
+    const scopeItems = scopes.map(s => {
+      switch (s) {
+        case 'user_info:read':
+          return 'Read your user information';
+        case 'user_info:write':
+          return 'Change your user information';
+      }
+    }).map(s => `<li>${s}</li>`).join('');
+
     return forwardToView(res, 'user-confirm', {
+      'community': COMMUNITY_NAME,
+      'email': user.email,
       'oauthUri': requestUrl,
       'csrfToken': sessCsrfToken.token,
       'clientName': client.name,
-      'firstname': user.firstname,
-      'scope': scope
+      'scopeItems': scopeItems
     });
   };
 

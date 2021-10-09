@@ -16,7 +16,7 @@ const theme:MUITheme = createTheme({
   },
   typography: {
     h1: {
-      fontSize: '2em'
+      fontSize: '2rem'
     }
   },
   components: {

@@ -5,7 +5,7 @@
  * @flow
  **/
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Container,
   Grid,
@@ -26,39 +26,52 @@ import {
   Logout,
   PersonAdd,
   PersonRemove,
-  ConnectWithoutContact
+  ConnectWithoutContact,
+  Anchor
 } from '@mui/icons-material';
 import { useGet, ApiResolver, doPut, doDelete } from '@service/api';
 import { useCurrentUser, useToken } from '@service/auth';
 import UserList from '@view/UserList';
 import Content from '@view/Content';
+import Username from '@view/Username';
 
 import type { User } from '@service/api';
+import type { UserAction } from "../service/api";
 
 type Props = {|
-  user: User
+  user: User,
+  refresh: () => void
 |};
 
-const Profile = ({ user }: Props):React$Node => {
+const Profile = ({ user, refresh }: Props):React$Node => {
   const { 
     email, 
     firstname, 
     lastname, 
-    sponsors 
+    sponsors,
+    actions
   } = user;
-  const current = useCurrentUser();
+  const [ current, ] = useCurrentUser();
   const [ token,, logout ] = useToken();
+  const [ disableButtons, setDisableButtons ] = useState(false);
   const me = current.status === 'success' ? current.result : null;
   const isMe = me?.email === user.email;
-  const isMySponsee = sponsors.find(u => u.email === me?.email) != null;
-  const isMySponsor = me?.sponsors.find(s => s.email === email) != null;
+  const userActions:Set<UserAction> = new Set(actions);
 
-  const addSponsor = () => {
-    doPut(`/user/${email}/sponsors/${me?.email || ''}`, token);
+  const canSponsor = userActions.has('sponsor') || userActions.has('remove_sponsor');
+
+  const addSponsor = async () => {
+    setDisableButtons(true);
+    await doPut(`/user/${email}/sponsors/${me?.email || ''}`, token);
+    refresh();
+    setDisableButtons(false);
   };
 
-  const remSponsor = () => {
-    doDelete(`/user/${email}/sponsors/${me?.email || ''}`, token);
+  const remSponsor = async () => {
+    setDisableButtons(true);
+    await doDelete(`/user/${email}/sponsors/${me?.email || ''}`, token);
+    refresh();
+    setDisableButtons(false);
   };
 
   return (
@@ -77,8 +90,8 @@ const Profile = ({ user }: Props):React$Node => {
           {firstname[0].toUpperCase()}
         </Avatar>
       </Grid>
-      <Grid item>
-        <Typography variant='h1'>{firstname} {lastname}</Typography>
+      <Grid item align='center'>
+        <Username user={user} variant='h1' justify='center' />
         <Typography 
           component={Link} 
           variant='caption'
@@ -88,7 +101,7 @@ const Profile = ({ user }: Props):React$Node => {
         >{email}</Typography>
       </Grid>
       <Grid item>
-        <ButtonGroup size='small'>
+        <ButtonGroup size='small' disabled={disableButtons}>
           { isMe && (
             <Tooltip title='Logout'>
               <IconButton onClick={logout}>
@@ -96,23 +109,29 @@ const Profile = ({ user }: Props):React$Node => {
               </IconButton>
             </Tooltip>
           )}
-          { !isMe && !isMySponsee && !isMySponsor && (
+
+          { !isMe && !userActions.has('remove_sponsor') && (
             <Tooltip title='Offer sponsorship'>
-              <IconButton onClick={addSponsor}>
+              <IconButton 
+                disabled={!userActions.has('sponsor')}
+                onClick={addSponsor}
+              >
                 <PersonAdd />
               </IconButton>
             </Tooltip>
           )}
-          { !isMe && isMySponsee && (
+          { !isMe && userActions.has('remove_sponsor') && (
             <Tooltip title='Remove sponsorship'>
               <IconButton onClick={remSponsor}>
                 <PersonRemove />
               </IconButton>
             </Tooltip>
           )}
-          { !isMe && !isMySponsee && !isMySponsor && (
+          { !isMe && (
             <Tooltip title='Request sponsorship'>
-              <IconButton>
+              <IconButton
+                disabled={!userActions.has('request_sponsor')}
+              >
                 <ConnectWithoutContact />
               </IconButton>
             </Tooltip>

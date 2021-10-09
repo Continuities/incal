@@ -21,7 +21,7 @@ const CLIENTS:{ [string]: Client } = {
     id: 'spa',
     name: 'Test SPA',
     clientSecret: null,
-    scopes: [ 'user_info:read' ],
+    scopes: [ 'user_info:read', 'user_info:write' ],
     grants: [ 'authorization_code', 'refresh_token' ],
     redirectUris: [ process.env.SERVER_URI || '' ],
     // short-lived refresh token of 1 day, since it lives in an SPA

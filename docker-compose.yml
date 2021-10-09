@@ -35,8 +35,12 @@ services:
       - DB_URI=mongodb://db
       - DB_NAME=app
       - SERVER_URI=http://localhost
+      - COMMUNITY_NAME=authWeb
       - SALT_ROUNDS=10
       - MAX_SPONSORS=3
+      - MAX_SPONSEES=3
+      - TO_SPONSOR=2
+      - TO_FULL_SPONSOR=3
     links:
       - db:db
     depends_on:

@@ -15,6 +15,7 @@ import {
   ListItemIcon,
   ListItemText
 } from '@mui/material';
+import Username from '@view/Username';
 
 import type { 
   UserStub, 
@@ -34,16 +35,16 @@ const UserList = ({ users, title }: Props):React$Node => {
         {title}
       </ListSubheader>
     )}>
-      { users.map(({ email, firstname, lastname }) => (
+      { users.map(user => (
         <ListItemButton 
           component={Link} 
-          to={`/${email}`}
-          key={email}
+          to={`/${user.email}`}
+          key={user.email}
         >
           <ListItemIcon>
-            <Avatar>{firstname[0]}</Avatar>
+            <Avatar>{user.firstname[0]}</Avatar>
           </ListItemIcon>
-          <ListItemText primary={`${firstname} ${lastname}`} />
+          <Username user={user} />
         </ListItemButton>
       ))}
     </List>

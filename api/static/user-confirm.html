@@ -2,19 +2,67 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Confirm Authorization to: %{clientName}</title>
+    <title>%{community} - Authorise %{clientName}</title>
+    <style>
+      html {
+        box-sizing: border-box;
+      }
+      *, *::before, *::after {
+        box-sizing: inherit;
+      }
+      body {
+        margin: 0;
+      }
+      .hidden {
+        display: none;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        padding: 20px 40px;
+      }
+      input, button {
+        padding: 10px 20px;
+        width: 150px;
+        font-size: 1.5rem;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 0;
+        cursor: pointer;
+      }
+      a {
+        cursor: pointer;
+        font-size: 1.2rem;
+        margin: 10px 0;
+        opacity: 0.5;
+      }
+      .buttons {
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+        margin-top: auto;
+      }
+      #agree-btn {
+        background: #2ECC40;
+        color: white;
+      }
+    </style>
   </head>
   <body>
     <form id="confirm-form">
-      <h3>User Authorization</h3>
-      <div>
-          <p>Dear %{firstname}, application %{clientName} wants the following access to your data in the OAuth Protected Resource Server:</p>
-          <p>%{scope}</p>
-          <p>Do you agree?</p>
+      <h3>%{clientName} wants to access your %{community} account</h3>
+      <h4>%{email}</h4>
+      <p>This will allow %{clientName} to:</p>
+      <ul>
+        %{scopeItems}
+      </ul>
+      <div class='buttons'>
+        <button id="deny-btn">Deny</button>
+        <button id="agree-btn">Allow</button>
       </div>
-      <button id="agree-btn">Agree</button>
-      <button id="deny-btn">Deny</button>
-      <button id="logout-btn">Log out</button>
+      <a id="logout-btn">Log out</a>
       <input id="csrf-token-input" type="hidden" name="csrfToken" value="%{csrfToken}"/>
     </form>
     <input id="oauth-uri-input" type="hidden" name="oauth_uri" value="%{oauthUri}"/>

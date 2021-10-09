@@ -110,13 +110,20 @@ type TokenData = [
   () => void // delete token call
 ];
 
-type UserData = ApiResponse<User>;
+type UserData = [
+  ApiResponse<User>,
+  () => void // refresh user
+]
 
-const UserContext = createContext<ApiResponse<User>>({ status: 'pending' });
+const UserContext = createContext<UserData>([ { status: 'pending' }, () => {} ]);
 export const UserProvider = ({ children }: Props):React$Node => {
-  const userResponse = useGet<User>('/user');
+  const [ resend, setResend ] = useState(0);
+  const userResponse = useGet<User>('/user', resend);
+
+  const doResend = () => setResend(r => r + 1);
+
   return (
-    <UserContext.Provider value={userResponse}>
+    <UserContext.Provider value={[ userResponse, doResend ]}>
       {children}
     </UserContext.Provider>
   );

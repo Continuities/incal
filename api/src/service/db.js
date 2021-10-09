@@ -19,3 +19,9 @@ export default async (collection:string):Promise<any> => {
   const client = await connect;
   return client.db(process.env.DB_NAME).collection(collection);
 };
+
+const secrets = new Set([ 'hash', '_id' ]);
+export const sanitise = (data:any):any =>
+  Object.fromEntries(
+    Object.entries(data)
+      .filter(([ key, val ]) => !secrets.has(key)));

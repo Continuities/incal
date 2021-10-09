@@ -2,27 +2,11 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Authorization Failed</title>
+    <title>Access Denied</title>
   </head>
   <body>
-    Authorization to %{clientName} denied by user %{email}<br/>
-    This page will close in <span id="countdown"></span> seconds.
     <script type="text/javascript">
-      const waitTime = 5000,
-            startTime = new Date().getTime(),
-            countdown = document.getElementById('countdown');
-
-      setTimeout(function cd() {
-        var t = new Date().getTime();
-
-        if (t - startTime > waitTime){
-          window.close();
-        }
-        else {
-          countdown.innerText = Math.floor((waitTime - (t - startTime)) / 1000);
-          setTimeout(cd, 1000);
-        }
-      }, 0);
+      window.close();
     </script>
   </body>
 </html>

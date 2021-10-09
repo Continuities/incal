@@ -12,11 +12,11 @@ import { ApiResolver } from '@service/api';
 import { useCurrentUser } from "@service/auth";
 
 const Home = ():React$Node => {
-  const response = useCurrentUser();
+  const [ response, refresh ] = useCurrentUser();
   return (
     <Content>
     <ApiResolver data={response}>
-      {user => <Profile user={user} />}
+      {user => <Profile user={user} refresh={refresh} />}
     </ApiResolver>
     </Content>
   );

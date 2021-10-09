@@ -10,25 +10,23 @@ import {
   getUser, 
   getUsers, 
   addSponsor,
-  removeSponsor
+  removeSponsor,
+  getAnchors
 } from '../service/user.js';
+import { sanitise } from '../service/db.js';
+import { canSponsor } from '../service/sponsorship.js';
 
 import type { Router } from 'express';
 import type { User } from '../service/user.js';
 
-const secrets = new Set([ 'hash', '_id' ]);
-const sanitise = (data:any):any =>
-  Object.fromEntries(
-    Object.entries(data)
-      .filter(([ key, val ]) => !secrets.has(key)));
+const withAnchorSponsors = async user => ({
+  ...user,
+  sponsors: !user.isAnchor 
+    ? user.sponsors 
+    : (await getAnchors())
+      .filter(a => a.email !== user.email)
+});
 
-const userResponse = async (res, email) => {
-  const user = await getUser(email);
-    if (!user) {
-      return res.sendStatus(404);
-    }
-    res.json(sanitise(user));
-};
 
 export default () => {
   const router:Router<> = express.Router();
@@ -36,12 +34,37 @@ export default () => {
   // Someone else's profile
   router.get('/user/:email', async (req, res) => {
     const { email } = req.params;
-    return userResponse(res, email);
+    const currentUser:User = req.session.user;
+    const user = await getUser(email);
+    if (!user) {
+      return res.sendStatus(404);
+    }
+
+    const actions = [];
+    await canSponsor(user, currentUser) && actions.push('request_sponsor');
+    await canSponsor(currentUser, user) && actions.push('sponsor');
+    user.sponsors.find(s => s.email === currentUser.email) && actions.push('remove_sponsor');
+
+    res.json(
+      sanitise(
+        await withAnchorSponsors({
+          ...user,
+          actions
+        })
+      )
+    );
   });
 
   // Your profile
   router.get('/user', async (req, res) => {
-    return userResponse(res, req.session.user.email);
+    res.json(
+      sanitise(
+        await withAnchorSponsors({
+          ...req.session.user,
+          actions: []
+        })
+      )
+    );
   });
 
   // All users
@@ -57,17 +80,11 @@ export default () => {
     if (!email || !sponsorEmail) {
       return res.sendStatus(400);
     }
-    const user:?User = await getUser(email);
+    const user = await getUser(email);
     const sponsor = await getUser(sponsorEmail);
-    if (!user || !sponsor) {
-      return res.sendStatus(400);
-    }
+    const valid = await canSponsor(sponsor, user);
 
-    // TODO: Cycle prevention
-    // TODO: Max sponsees
-    if (user.sponsors.length >= (parseInt(process.env.MAX_SPONSORS) || 0) ||
-        user.sponsors.find(s => s.email === sponsorEmail) || 
-        sponsor.sponsors.find(s => s.email === email)) {
+    if (!valid) {
       return res.sendStatus(400);
     }
 
