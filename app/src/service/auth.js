@@ -50,9 +50,9 @@ export const ServerConfig:Config = {
 };
 
 export const ClientConfig:Config = {
-  id: 'spa',
-  name: 'Test SPA',
+  id: 'dashboard',
   grantType: 'authorization_code',
+  scope: 'user_info:read,user_info:write',
   redirectUri: process.env.APP_URI || ''
 };
 

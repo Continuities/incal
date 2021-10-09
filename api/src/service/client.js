@@ -17,9 +17,9 @@ export type Client = {|
 |};
 
 const CLIENTS:{ [string]: Client } = {
-  'spa': {
-    id: 'spa',
-    name: 'Test SPA',
+  'dashboard': {
+    id: 'dashboard',
+    name: 'Account Dashboard',
     clientSecret: null,
     scopes: [ 'user_info:read', 'user_info:write' ],
     grants: [ 'authorization_code', 'refresh_token' ],
