@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Content from '@view/Content';
 import Profile from '@view/Profile';
+import Orphan from '@view/Orphan';
 import { useGet, ApiResolver } from '@service/api';
 
 const ProfilePage = ():React$Node => {
@@ -17,7 +18,10 @@ const ProfilePage = ():React$Node => {
   const response = useGet(`/user/${email || ''}`, refresh);
   return (
     <Content>
-      <ApiResolver data={response}>
+      <ApiResolver 
+        data={response}
+        error={() => <Orphan />}
+      >
         {user => <Profile 
           user={user} 
           refresh={() => setRefresh(r => r + 1)} />}

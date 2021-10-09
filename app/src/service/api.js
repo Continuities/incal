@@ -14,7 +14,7 @@ import { useToken } from '@service/auth';
 
 import type { Token } from '@service/auth';
 
-const API = process.env.API_URI || '';
+const API = process.env.REACT_APP_API_URI || '';
 
 export type ApiStatus = 
   'success' | 
@@ -112,10 +112,11 @@ export const doDelete = async <T> (query:string, token:?Token, signal?:AbortSign
 
 type ResolverProps<T> = {|
   children: T => React$Node,
-  data: any
+  data: any,
+  error?: ApiError => React$Node
 |};
 
-export const ApiResolver = <T>({ children, data }: ResolverProps<T>):React$Node => {
+export const ApiResolver = <T>({ children, error, data }: ResolverProps<T>):React$Node => {
   if (data.hasOwnProperty('status')) {
     switch (data.status) {
       case 'success':
@@ -132,6 +133,9 @@ export const ApiResolver = <T>({ children, data }: ResolverProps<T>):React$Node 
           </Grid>
         );
       case 'error':
+        if (error) {
+          return error(data);
+        }
         return (
           <Grid container sx={{
             height: 1,

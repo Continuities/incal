@@ -6,18 +6,31 @@
  **/
 
 import React from 'react';
+import Content from '@view/Content';
 import {
-  Box,
-  Container
+  List,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon
 } from '@mui/material';
+import { 
+  Logout
+} from '@mui/icons-material';
+import { useToken } from '@service/auth';
 
 const Settings = ():React$Node => {
+  const [,,logout] = useToken();
   return (
-    <Box my={5}>
-      <Container maxWidth='sm'>
-        TODO: Settings
-      </Container>
-    </Box>
+    <Content>
+      <List>
+        <ListItemButton onClick={logout}>
+          <ListItemIcon>
+            <Logout />
+          </ListItemIcon>
+          <ListItemText primary='Logout'/>
+        </ListItemButton>
+      </List>
+    </Content>
   );
 };
 

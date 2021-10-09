@@ -22,10 +22,6 @@ services:
     environment:
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
       - PORT=3000
-      - AUTH_URI=http://localhost/oauth/authorize
-      - TOKEN_URI=http://localhost/oauth/token
-      - APP_URI=http://localhost
-      - API_URI=http://localhost
   api:
     build:
       context: ./api

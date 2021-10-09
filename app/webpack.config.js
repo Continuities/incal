@@ -3,6 +3,8 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 
+require('dotenv').config({ path: './.env' }); 
+
 module.exports = {
   output: {
     path: path.join(__dirname, '/dist'),
@@ -50,11 +52,10 @@ module.exports = {
   },
   plugins: [
     new webpack.EnvironmentPlugin([
-      'NODE_ENV', 
-      'AUTH_URI',
-      'TOKEN_URI',
-      'APP_URI',
-      'API_URI'
+      'REACT_APP_AUTH_URI',
+      'REACT_APP_TOKEN_URI',
+      'REACT_APP_APP_URI',
+      'REACT_APP_API_URI'
     ]),
     new HtmlWebpackPlugin({ 
       template: './static/index.html',

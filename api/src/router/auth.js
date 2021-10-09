@@ -11,7 +11,6 @@ import bcrypt from 'bcrypt';
 import { getClient } from '../service/client.js';
 import { getUser, saveUser } from '../service/user.js';
 
-import type { Router } from 'express';
 import type { User } from '../service/user.js';
 
 const COMMUNITY_NAME = process.env.COMMUNITY_NAME || 'authWeb';
@@ -23,11 +22,12 @@ const forwardToLogin = async (res, callbackUri) =>
   forwardToView(res, 'login', {
     community: COMMUNITY_NAME,
     callbackUri: Buffer.from(callbackUri, 'utf-8').toString('base64'),
-    loginUrl: `${process.env.SERVER_URI}/oauth/login`,
-    registerUrl: `${process.env.SERVER_URI}/oauth/register`
+    loginUrl: `${String(process.env.SERVER_URI)}/oauth/login`,
+    registerUrl: `${String(process.env.SERVER_URI)}/oauth/register`
   });
 
 const forwardToView = async (res, viewName:string, viewModel:{[string]:string}) => {
+  // $FlowFixMe[incompatible-use] Flow doesn't know about import.meta.url
   const template = (await fs.readFile(new URL(`../../static/${viewName}.html`, import.meta.url))).toString();
   if (!template) {
     return res.sendStatus(500);
@@ -36,7 +36,7 @@ const forwardToView = async (res, viewName:string, viewModel:{[string]:string}) 
     .entries(viewModel)
     .reduce((html, variable) => html.replace(
         new RegExp(`%{${variable[0]}}`, 'g'), 
-        variable[1]
+        String(variable[1])
       ), template);
 
 	res.status(200).send(rendered);
@@ -44,8 +44,8 @@ const forwardToView = async (res, viewName:string, viewModel:{[string]:string}) 
 
 const isExpired = (time) => Date.now() >= time;
 
-export default (oauth:any) => {
-  const router:Router<> = express.Router();
+export default (oauth:any):any => {
+  const router = express.Router();
 
   const checkLogin = async (req, res, next) => {
     const { 
@@ -116,6 +116,7 @@ export default (oauth:any) => {
         case 'user_info:write':
           return 'Change your user information';
       }
+      return '';
     }).map(s => `<li>${s}</li>`).join('');
 
     return forwardToView(res, 'user-confirm', {
@@ -204,7 +205,7 @@ export default (oauth:any) => {
       })(req, res);
       return res.status(200).json(token);
     }
-    catch {
+    catch (err) {
       return res.status(500).json(err)
     }
   });

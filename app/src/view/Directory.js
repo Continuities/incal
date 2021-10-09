@@ -13,12 +13,16 @@ import {
 import { useGet, ApiResolver } from '@service/api';
 import UserList from '@view/UserList';
 import Content from '@view/Content';
+import Orphan from '@view/Orphan';
 
 const Directory = ():React$Node => {
   const response = useGet('/users');
   return (
     <Content>
-      <ApiResolver data={response}>
+      <ApiResolver 
+        data={response}
+        error={() => <Orphan />}
+      >
         {users => <UserList users={users} />}
       </ApiResolver>
     </Content>

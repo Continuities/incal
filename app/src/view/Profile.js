@@ -68,6 +68,8 @@ const Profile = ({ user, refresh }: Props):React$Node => {
     setDisableButtons(false);
   };
 
+  const isAnchor = user.tags.includes('anchor');
+
   const addSponsor = button(() => doPut(`/user/${email}/sponsors/${me?.email || ''}`, token));
   const remSponsor = button(() => doDelete(`/user/${email}/sponsors/${me?.email || ''}`, token));
   const addAnchor = button(() => doPut(`/anchors/${email}`, token));
@@ -153,7 +155,7 @@ const Profile = ({ user, refresh }: Props):React$Node => {
       <Grid item>
         <Box mx={7}>
           <UserList 
-            title='Sponsors' 
+            title={isAnchor ? 'Co-Anchors' : 'Sponsors' }
             users={sponsors} />
         </Box>
       </Grid>

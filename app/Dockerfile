@@ -3,7 +3,7 @@ FROM node:latest
 ADD . /opt/app
 
 WORKDIR /opt/app
-RUN yarn install
+RUN yarn install --production
 
 EXPOSE 3000
 

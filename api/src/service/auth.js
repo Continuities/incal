@@ -63,12 +63,12 @@ export const getAccessToken = async (tokenString:string):Promise<?AccessToken> =
 export const getRefreshToken = async (tokenString:string):Promise<?RefreshToken> => populate(await refreshStore.get(tokenString));
 export const getAuthorisationCode = async (authString:string):Promise<?AuthorisationCode> => populate(await authStore.get(authString));
 
-export const saveAccessToken = async (token:AccessToken) => 
+export const saveAccessToken = async (token:AccessToken):Promise<empty> => 
   accessStore.setExpiration(token.accessToken, depopulate(token), token.accessTokenExpiresAt);
-export const saveRefreshToken = async (token:RefreshToken) => 
+export const saveRefreshToken = async (token:RefreshToken):Promise<empty> => 
   refreshStore.setExpiration(token.refreshToken, depopulate(token), token.refreshTokenExpiresAt);
-export const saveAuthorisationCode = async (code:AuthorisationCode) => 
+export const saveAuthorisationCode = async (code:AuthorisationCode):Promise<empty> => 
   authStore.setExpiration(code.authorizationCode, depopulate(code), code.expiresAt);
 
-export const revokeRefreshToken = async (token:RefreshToken) => refreshStore.remove(token.refreshToken);
-export const revokeAuthorisationCode = async (code:AuthorisationCode) => authStore.remove(code.authorizationCode);
+export const revokeRefreshToken = async (token:RefreshToken):Promise<empty> => refreshStore.remove(token.refreshToken);
+export const revokeAuthorisationCode = async (code:AuthorisationCode):Promise<empty> => authStore.remove(code.authorizationCode);

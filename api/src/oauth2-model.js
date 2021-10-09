@@ -55,7 +55,7 @@ export default {
     *        {Object} user - the user object
     *        {String} user.email - identifier of the user
     */
-    getRefreshToken: async (refreshToken:string) => getRefreshToken(refreshToken),
+    getRefreshToken: async (refreshToken:string):Promise<?RefreshToken> => getRefreshToken(refreshToken),
 
     /**
     * the node-oauth2-server use this method to get detail information of a authorization code previously stored used OauthModel.prototype.saveAuthorizationCode.
@@ -70,7 +70,7 @@ export default {
     *         {Object} user - the user object
     *         {String} user.email - the user identifier
     */
-    getAuthorizationCode: async (authCode:string) => getAuthorisationCode(authCode),
+    getAuthorizationCode: async (authCode:string):Promise<?AuthorisationCode> => getAuthorisationCode(authCode),
 
     /**
     * the node-oauth2-server use this method to get detail infomation of a registered client.
@@ -83,7 +83,7 @@ export default {
     *         {Number} [accessTokenLifetime=3600] - define the lifetime of an access token in seconds, default is 1 hour
     *         {Number} [refreshTokenLifetime=3600 * 24 * 14] - define the lifetime of an refresh token in seconds, default is 2 weeks
     */
-    getClient: async (clientId:string, clientSecret:?string = null) => {
+    getClient: async (clientId:string, clientSecret:?string = null):Promise<?Client> => {
       const client = await getClient(clientId);
       if (!client || client.clientSecret !== clientSecret) {
         return null;
@@ -105,7 +105,7 @@ export default {
     * @param {String} user.email - the user identifier
     * @return {Object} token - the token object saved, same as the parameter 'token'
     */
-    saveToken: async (token:any, client:any, user:any) => {
+    saveToken: async (token:any, client:any, user:any):Promise<any> => {
 
       const commonInfo = {
         client: client.id,
@@ -146,7 +146,7 @@ export default {
     * @param {String} user.email - the user identifier
     * @return {Object} code - the code object saved
     */
-    saveAuthorizationCode: async (code:$Shape<AuthorisationCode>, client:Client, user:User) => {
+    saveAuthorizationCode: async (code:$Shape<AuthorisationCode>, client:Client, user:User): Promise<$Shape<AuthorisationCode>> => {
 
       const savedCode = {
         ...code,
@@ -172,7 +172,7 @@ export default {
     * @param {String} token.user.email - the user identifier
     * @return {Boolean} - true if the token was successfully revoked, false if the token cound not be found
     */
-    revokeToken: async (token:$Shape<RefreshToken>) => revokeRefreshToken(token),
+    revokeToken: async (token:$Shape<RefreshToken>):Promise<empty> => revokeRefreshToken(token),
 
     /**
     * the node-oauth2-server uses this method to revoke a authorization code(mostly when it expires)
@@ -187,7 +187,7 @@ export default {
     * @param {String} code.user.email - the user identifier
     * @return {Boolean} - true if the code is revoked successfully,false if the could not be found
     */
-    revokeAuthorizationCode: async (code:$Shape<AuthorisationCode>) => revokeAuthorisationCode(code),
+    revokeAuthorizationCode: async (code:$Shape<AuthorisationCode>):Promise<empty> => revokeAuthorisationCode(code),
 
     /**
     * the node-oauth2-server uses this method to determine what scopes should be granted to the client for accessing the user's data.

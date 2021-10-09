@@ -45,15 +45,15 @@ type Config = {|
 |};
 
 export const ServerConfig:Config = {
-  authorize: process.env.AUTH_URI || '',
-  token: process.env.TOKEN_URI || ''
+  authorize: process.env.REACT_APP_AUTH_URI || '',
+  token: process.env.REACT_APP_TOKEN_URI || ''
 };
 
 export const ClientConfig:Config = {
   id: 'dashboard',
   grantType: 'authorization_code',
   scope: 'user_info:read,user_info:write',
-  redirectUri: process.env.APP_URI || ''
+  redirectUri: process.env.REACT_APP_APP_URI || ''
 };
 
 export const getToken = async (code:string, verify:string):Promise<Token> => {

@@ -18,7 +18,6 @@ import {
 import { sanitise } from '../service/db.js';
 import { canSponsor } from '../service/sponsorship.js';
 
-import type { Router } from 'express';
 import type { User } from '../service/user.js';
 
 const withAnchorSponsors = async user => ({
@@ -30,8 +29,8 @@ const withAnchorSponsors = async user => ({
 });
 
 
-export default () => {
-  const router:Router<> = express.Router();
+export default ():any => {
+  const router = express.Router();
 
   // Someone else's profile
   router.get('/user/:email', async (req, res) => {

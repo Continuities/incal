@@ -19,12 +19,11 @@ if (!port || isNaN(port)) {
   throw 'No PORT specified'
 }
 
-const app = express();
+const app:any = express();
 
 const somethingAsync = async () => 'FOOOO';
 
 const oauth = new OAuthServer({ model: authModel });
-
 app.use(cors());
 app.use(express.json({ type: [ 'application/json' ] }));
 app.use(express.urlencoded({ extended: true }));
