@@ -22,7 +22,7 @@ const Frame = ({ children }: Props):React$Node => {
       direction='column'
       wrap='nowrap'
       sx={{
-        height: '100vh'
+        height: 1
       }}
     >
       <Grid 

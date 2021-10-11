@@ -59,7 +59,7 @@ const Login = ({ onLogin }: Props):React$Node => {
       alignItems='center'
       justifyContent='center'
       sx={{
-        height: '100vh'
+        height: 1
       }}
     >
       <Grid item>
