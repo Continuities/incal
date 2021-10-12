@@ -51,18 +51,19 @@
   <body>
     <form id='login' action='%{loginUrl}' method='POST'>
       <h1>Log in to %{community}</h1>
-      <input type='email' placeholder='email' name='email' />
-      <input type='password' placeholder='password' name='password' />
+      <input required type='email' placeholder='email' name='email' />
+      <input required type='password' placeholder='password' name='password' />
       <input type="hidden" name="callback_uri" value="%{callbackUri}">
       <button type='submit'>Login</button>
       <a id='register-tab'>Register</a>
     </form>
     <form class='hidden' id='register' action='%{registerUrl}' method='POST'>
       <h1>Register a new %{community} account</h1>
-      <input type='email' placeholder='email' name='email' />
-      <input type='password' placeholder='password' name='password' />
-      <input type='text' placeholder='first name' name='firstname' />
-      <input type='text' placeholder='last name' name='lastname' />
+      <input required type='email' placeholder='email' name='email' />
+      <input required type='text' placeholder='first name' name='firstname' />
+      <input required type='text' placeholder='last name' name='lastname' />
+      <input required type='password' placeholder='password' name='password' />
+      <input required type='password' placeholder='confirm password' name='confirm' />
       <input type="hidden" name="callback_uri" value="%{callbackUri}">
       <button type='submit'>Register</button>
       <a id='login-tab'>Login</a>
@@ -72,6 +73,7 @@
         e.preventDefault();
         document.getElementById('login').className = 'hidden';
         document.getElementById('register').className = '';
+        window.resizeTo(window.innerWidth, document.getElementById('register').clientHeight + 80);
       });
       document.getElementById('login-tab').addEventListener('click', e => {
         e.preventDefault();

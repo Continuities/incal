@@ -8,6 +8,15 @@
 import collection from './db.js';
 import { getSponsees } from './user.js';
 import type { User } from './user.js';
+import { v4 as uuid } from 'uuid';
+
+export type Invite = {|
+  from: string,
+  to: string,
+  slug: string
+|};
+
+const INVITE_COLLECTION = 'invite';
 
 const MAX_SPONSORS = parseInt(process.env.MAX_SPONSORS) || 0;
 const MAX_SPONSEES = parseInt(process.env.MAX_SPONSEES) || 0;
@@ -62,4 +71,26 @@ export const authorise = async (req:any, res:any, next:any):Promise<empty> => {
     return res.sendStatus(401);
   }
   return next();
+};
+
+export const saveInvite = async (from:string, to:string):Promise<Invite> => {
+  const col = await collection(INVITE_COLLECTION);
+  const invite = {
+    from,
+    to,
+    slug: uuid()
+  };
+  await col.insertOne(invite);
+  return invite;
+};
+
+export const getInvite = async (slug:?string):Promise<?Invite> => {
+  if (!slug) { return null; }
+  const col = await collection(INVITE_COLLECTION);
+  return col.findOne({ slug });
+};
+
+export const removeInvite = async (slug:?string):Promise<void> => {
+  const col = await collection(INVITE_COLLECTION);
+  return col.deleteOne({ slug });
 }

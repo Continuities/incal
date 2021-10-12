@@ -67,6 +67,11 @@ export const saveUser = async (user:any):Promise<User> => {
   return withTags(user);
 };
 
+export const upgradeUser = async (email:string, firstname:string, lastname: string, hash:string):Promise<void> => {
+  const users = await collection(COLLECTION);
+  await users.updateOne({ email }, { $set: { firstname, lastname, hash }});
+};
+
 export const removeUser = async (email:string):Promise<void> => {
   const users = await collection(COLLECTION);
   await users.deleteOne({ email });
@@ -109,3 +114,11 @@ export const removeAnchor = async (email:string) => {
   const users = await collection(COLLECTION);
   await users.updateOne({ email }, { $set: { isAnchor: false }});
 };
+
+export const refreshUserMiddleware = async (req:any, res:any, next:any) => {
+  const { user } = req.session;
+  if (user) {
+    req.session.user = await getUser(user.email);
+  }
+  next();
+}

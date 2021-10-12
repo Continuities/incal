@@ -9,7 +9,8 @@ import express from 'express';
 import { promises as fs } from 'fs';
 import bcrypt from 'bcrypt';
 import { getClient } from '../service/client.js';
-import { getUser, saveUser } from '../service/user.js';
+import { getUser, saveUser, upgradeUser } from '../service/user.js';
+import { getInvite, removeInvite } from '../service/sponsorship.js';
 
 import type { User } from '../service/user.js';
 
@@ -129,6 +130,66 @@ export default (oauth:any):any => {
     });
   };
 
+  router.get('/invite', async (req, res) => {
+    const { slug } = req.query;
+    const invite = await getInvite(slug);
+    if (!invite) {
+      return res.sendStatus(404);
+    }
+    const from = await getUser(invite.from);
+    const to = await getUser(invite.to);
+
+    if (!from || !to) {
+      return res.status(500).send('Invite is invalid');
+    }
+
+    return forwardToView(res, 'invite', {
+      community: COMMUNITY_NAME,
+      fromName: `${from.firstname} ${from.lastname}`,
+      fromEmail: from.email,
+      to: to.email,
+      slug,
+      callbackUri: 'TODO'
+    });
+  });
+
+  router.post('/invite', async (req, res) => {
+    const { 
+      callback_uri, 
+      email,
+      firstname,
+      lastname,
+      password,
+      confirm,
+      slug
+    } = req.body;
+
+    const invite = await getInvite(slug);
+    if (!invite || invite.to !== email) {
+      return res.status(400).send('invalid invite');
+    }
+
+    if (password !== confirm) {
+      return res.status(400).send('passwords do not match');
+    }
+
+    const user = await getUser(email);
+    if (!user) {
+      return res.status(400).send('expired invite');
+    }
+
+    const saltRounds = parseInt(process.env.SALT_ROUNDS);
+    if (isNaN(saltRounds)) {
+      throw 'Non-numeric SALT_ROUNDS specified';
+    }
+    const hash = await bcrypt.hash(password, saltRounds);
+
+    await upgradeUser(email, firstname, lastname, hash);
+    await removeInvite(slug);
+
+    return forwardToLogin(res, String(process.env.SERVER_URI));
+  });
+
   router.post('/register', async (req, res) => {
     const { 
       callback_uri, 
@@ -136,6 +197,7 @@ export default (oauth:any):any => {
       firstname,
       lastname,
       password 
+      // TODO: confirm
     } = req.body;
 
     if (!callback_uri || !email || !password || !firstname || !lastname){
@@ -143,7 +205,7 @@ export default (oauth:any):any => {
     }
 
     if (await getUser(email)) {
-      return res.status(410).text('Email already in use');
+      return res.status(410).send('Email already in use');
     }
 
     const callbackUri = Buffer.from(callback_uri, 'base64').toString('utf-8');

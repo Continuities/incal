@@ -18,7 +18,7 @@ import {
   removeUser
 } from '../service/user.js';
 import { sanitise } from '../service/db.js';
-import { canSponsor } from '../service/sponsorship.js';
+import { canSponsor, saveInvite } from '../service/sponsorship.js';
 
 import type { User } from '../service/user.js';
 
@@ -90,21 +90,23 @@ export default ():any => {
     const { email } = req.params;
     const { user: currentUser } = req.session;
     if (!email) { // TODO: Validate email
-      return res.status(400).text('Invalid email');
+      return res.status(400).send('Invalid email');
     }
 
     if (!await canSponsor(currentUser)) {
-      return res.status(400).text('Cannot sponsor more members')
+      return res.status(400).send('Cannot sponsor more members')
     }
 
     if (await getUser(email)) {
-      return res.status(400).text('Email already in use');
+      return res.status(400).send('Email already in use');
     }
     
     await saveUser({
       email: email,
       sponsors: [ currentUser.email ]
     });
+
+    await saveInvite(currentUser.email, email);
 
     req.session.user = await getUser(req.session.user.email);
 
@@ -116,12 +118,12 @@ export default ():any => {
     const { email } = req.params;
     const { user: currentUser } = req.session;
     if (!email) {
-      return res.status(400).text('Param email required');
+      return res.status(400).send('Param email required');
     }
 
     const user = await getUser(email);
     if (!user) {
-      return res.status(400).text('No such invite');
+      return res.status(400).send('No such invite');
     }
 
     if (!user.sponsors.find(s => s.email === currentUser.email)) {
