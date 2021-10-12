@@ -20,7 +20,8 @@ const ProfilePage = ():React$Node => {
     <Content>
       <ApiResolver 
         data={response}
-        error={() => <Orphan />}
+        error={({ code, description }) => 
+          code === 401 ? <Orphan /> : description}
       >
         {user => <Profile 
           user={user} 

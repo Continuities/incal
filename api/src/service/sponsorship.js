@@ -27,16 +27,27 @@ const maxSponsees = (numSponsors:number, isAnchor:bool):number => {
   return MAX_SPONSEES;
 };
 
-export const canSponsor = async (sponsor:?User, user:?User):Promise<bool> => {
-  if (!user || !sponsor || user.tags.includes('anchor')) {
+export const canSponsor = async (sponsor:?User, user?:?User):Promise<bool> => {
+  if (!sponsor) {
     return false;
   }
 
   const existingSponsees = (await getSponsees(sponsor.email)).length;
 
+  if (existingSponsees >= maxSponsees(sponsor.sponsors.length, sponsor.tags.includes('anchor'))) {
+    return false;
+  }
+
+  if (!user) {
+    return true;
+  }
+
+  if (user.tags.includes('anchor')) {
+    return false;
+  }
+
   // TODO: Cycle prevention
   if (user.sponsors.length >= MAX_SPONSORS ||
-      existingSponsees >= maxSponsees(sponsor.sponsors.length, sponsor.tags.includes('anchor')) ||
       user.sponsors.find(s => s.email === sponsor.email) || 
       sponsor.sponsors.find(s => s.email === user.email)) {
     return false;

@@ -13,7 +13,9 @@ import {
   removeSponsor,
   getAnchors,
   addAnchor,
-  removeAnchor
+  removeAnchor,
+  saveUser,
+  removeUser
 } from '../service/user.js';
 import { sanitise } from '../service/db.js';
 import { canSponsor } from '../service/sponsorship.js';
@@ -62,11 +64,16 @@ export default ():any => {
 
   // Your profile
   router.get('/user', async (req, res) => {
+    const { user } = req.session;
+    const actions = [];
+
+    await canSponsor(user) && actions.push('invite_sponsee');
+
     res.json(
       sanitise(
         await withAnchorSponsors({
           ...req.session.user,
-          actions: []
+          actions
         })
       )
     );
@@ -76,6 +83,54 @@ export default ():any => {
   router.get('/users', async (req, res) => {
     const users = await getUsers();
     res.json(users.map(sanitise));
+  });
+
+  // Invite a sponsee
+  router.put('/user/sponsees/:email', async (req, res) => {
+    const { email } = req.params;
+    const { user: currentUser } = req.session;
+    if (!email) { // TODO: Validate email
+      return res.status(400).text('Invalid email');
+    }
+
+    if (!await canSponsor(currentUser)) {
+      return res.status(400).text('Cannot sponsor more members')
+    }
+
+    if (await getUser(email)) {
+      return res.status(400).text('Email already in use');
+    }
+    
+    await saveUser({
+      email: email,
+      sponsors: [ currentUser.email ]
+    });
+
+    req.session.user = await getUser(req.session.user.email);
+
+    res.sendStatus(204);
+  });
+
+  // Cancel an invite
+  router.delete('/user/sponsees/:email', async (req, res) => {
+    const { email } = req.params;
+    const { user: currentUser } = req.session;
+    if (!email) {
+      return res.status(400).text('Param email required');
+    }
+
+    const user = await getUser(email);
+    if (!user) {
+      return res.status(400).text('No such invite');
+    }
+
+    if (!user.sponsors.find(s => s.email === currentUser.email)) {
+      return res.status(401)
+    }
+
+    await removeUser(email);
+    req.session.user = await getUser(req.session.user.email);
+    res.sendStatus(204);
   });
 
   // Add a sponsor
@@ -94,6 +149,7 @@ export default ():any => {
     }
 
     await addSponsor(email, sponsorEmail);
+    req.session.user = await getUser(req.session.user.email);
     res.sendStatus(204);
   });
 
@@ -114,6 +170,7 @@ export default ():any => {
     }
 
     await removeSponsor(email, sponsorEmail);
+    req.session.user = await getUser(req.session.user.email);
     res.sendStatus(204);
   });
 
@@ -130,6 +187,7 @@ export default ():any => {
     }
 
     await addAnchor(email);
+    req.session.user = await getUser(req.session.user.email);
     res.sendStatus(204);
   });
 
@@ -146,6 +204,7 @@ export default ():any => {
     }
 
     await removeAnchor(email);
+    req.session.user = await getUser(req.session.user.email);
     res.sendStatus(204);
   });
 

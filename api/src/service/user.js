@@ -9,7 +9,8 @@ import collection, { sanitise } from './db.js';
 
 export type UserTag = 
   'anchor' |
-  'orphan';
+  'orphan' |
+  'invite-pending';
 
 export type UserStub = {|
   email: string,
@@ -21,6 +22,7 @@ export type UserStub = {|
 export type User = {|
   ...UserStub,
   sponsors: Array<UserStub>,
+  sponsees: Array<UserStub>,
   hash: string
 |};
 
@@ -37,6 +39,7 @@ const withTags = user => {
   const tags = [];
   user.isAnchor && tags.push('anchor');
   !user.isAnchor && user.sponsors.length === 0 && tags.push('orphan');
+  !user.hash && tags.push('invite-pending');
   return {
     ...user,
     tags
@@ -52,6 +55,9 @@ export const getUser = async (email:string):Promise<?User> => {
   user.sponsors = await Promise.all(user.sponsors.map(async s => {
     return sanitise(withTags(await users.findOne({ email: s })));
   }));
+  user.sponsees = (await getSponsees(email))
+    .map(sanitise)
+    .map(toStub);
   return withTags(user);
 };
 
@@ -60,6 +66,11 @@ export const saveUser = async (user:any):Promise<User> => {
   await users.insertOne(user);
   return withTags(user);
 };
+
+export const removeUser = async (email:string):Promise<void> => {
+  const users = await collection(COLLECTION);
+  await users.deleteOne({ email });
+}
 
 export const getUsers = async ():Promise<Array<User>> => {
   const col = await collection(COLLECTION);

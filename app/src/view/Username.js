@@ -8,11 +8,13 @@
 import React from 'react';
 import { 
   Typography,
-  Grid
+  Grid,
+  Tooltip
 } from '@mui/material';
 import { 
   Anchor,
-  LinkOff
+  LinkOff,
+  MarkunreadMailboxOutlined
 } from '@mui/icons-material';
 
 import type { User, UserStub } from '@service/api';
@@ -28,8 +30,10 @@ const Username = ({ user, variant = 'body1', justify = 'flex-start' }: Props):Re
     alignItems: 'center',
     justifyContent: justify
   }}>
-      <Typography variant={variant} sx={{ mr: 1 }}>
-        {user.firstname} {user.lastname}
+      <Typography variant={variant}>
+        { user.firstname && user.lastname ? 
+          `${user.firstname} ${user.lastname}` : 
+          user.email }
       </Typography>
       { user.tags.map(tag => (
         <UserTag tag={tag} variant={variant} key={tag} />
@@ -38,11 +42,29 @@ const Username = ({ user, variant = 'body1', justify = 'flex-start' }: Props):Re
 );
 
 const UserTag = ({ tag, variant }) => {
+  const sx = {
+    typography: variant,
+    ml: 1
+  };
   switch (tag) {
     case 'anchor':
-      return <Anchor sx={{ typography: variant }} />
+      return (
+        <Tooltip title='Anchor member'>
+          <Anchor sx={sx} />
+        </Tooltip>
+      );
     case 'orphan':
-      return <LinkOff sx={{ typography: variant }} />
+      return (
+        <Tooltip title='No sponsors'>
+          <LinkOff sx={sx} />
+        </Tooltip>
+      );
+    case 'invite-pending':
+      return (
+        <Tooltip title='Invited'>
+          <MarkunreadMailboxOutlined sx={sx} />
+        </Tooltip>
+      )
   }
   return null;
 };

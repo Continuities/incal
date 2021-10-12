@@ -20,7 +20,9 @@ import {
   Link,
   ButtonGroup,
   IconButton,
-  Tooltip
+  Tooltip,
+  Tabs,
+  Tab
 } from '@mui/material';
 import {
   Logout,
@@ -50,11 +52,13 @@ const Profile = ({ user, refresh }: Props):React$Node => {
     firstname, 
     lastname, 
     sponsors,
+    sponsees,
     actions
   } = user;
-  const [ current, ] = useCurrentUser();
+  const [ current, refreshCurrent ] = useCurrentUser();
   const [ token,, logout ] = useToken();
   const [ disableButtons, setDisableButtons ] = useState(false);
+  const [ tab, setTab ] = useState(0);
   const me = current.status === 'success' ? current.result : null;
   const isMe = me?.email === user.email;
   const userActions:Set<UserAction> = new Set(actions);
@@ -65,6 +69,7 @@ const Profile = ({ user, refresh }: Props):React$Node => {
     setDisableButtons(true);
     await func();
     refresh();
+    refreshCurrent();
     setDisableButtons(false);
   };
 
@@ -88,7 +93,7 @@ const Profile = ({ user, refresh }: Props):React$Node => {
           height: 200,
           fontSize: 'h1.fontSize'
         }}>
-          {firstname[0].toUpperCase()}
+          {(firstname || email)[0].toUpperCase()}
         </Avatar>
       </Grid>
       <Grid item align='center'>
@@ -152,12 +157,17 @@ const Profile = ({ user, refresh }: Props):React$Node => {
           )}
         </ButtonGroup>
       </Grid>
-      <Grid item>
-        <Box mx={7}>
-          <UserList 
-            title={isAnchor ? 'Co-Anchors' : 'Sponsors' }
-            users={sponsors} />
-        </Box>
+      <Grid item sx={{ mx: 7 }}>
+        <Tabs 
+          centered 
+          value={tab} 
+          onChange={(e, v) => setTab(v)}
+        >
+          <Tab label={isAnchor ? 'Co-Anchors' : 'Sponsors'} />
+          <Tab label='Sponsees' />
+        </Tabs>
+        <UserList 
+          users={tab === 0 ? sponsors : sponsees} />
       </Grid>
     </Grid>
   )

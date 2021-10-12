@@ -52,7 +52,8 @@ export type UserAction =
   'request_sponsor' |
   'remove_sponsor' |
   'add_anchor' |
-  'remove_anchor';
+  'remove_anchor' |
+  'invite_sponsee';
 
 export type UserTag =
   'anchor' |
@@ -60,14 +61,15 @@ export type UserTag =
 
 export type UserStub = {|
   email: string,
-  firstname: string,
-  lastname: string,
+  firstname?: string,
+  lastname?: string,
   tags: Array<UserTag>
 |};
 
 export type User = {|
   ...UserStub,
   sponsors: Array<UserStub>,
+  sponsees: Array<UserStub>,
   actions: Array<UserAction>
 |};
 

@@ -141,6 +141,11 @@ export default (oauth:any):any => {
     if (!callback_uri || !email || !password || !firstname || !lastname){
       return res.sendStatus(400);
     }
+
+    if (await getUser(email)) {
+      return res.status(410).text('Email already in use');
+    }
+
     const callbackUri = Buffer.from(callback_uri, 'base64').toString('utf-8');
     const saltRounds = parseInt(process.env.SALT_ROUNDS);
     if (isNaN(saltRounds)) {
@@ -176,7 +181,7 @@ export default (oauth:any):any => {
     const callbackUri = Buffer.from(callback_uri, 'base64').toString('utf-8');
 
     const user:?User = await getUser(email);
-    if (!user || !(await bcrypt.compare(password, user.hash))) {
+    if (!user || !user.hash || !(await bcrypt.compare(password, user.hash))) {
       return forwardToLogin(res, callbackUri);
     }
 

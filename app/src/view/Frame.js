@@ -30,6 +30,7 @@ const Frame = ({ children }: Props):React$Node => {
         component='main'
         sx={{
           overflow: 'auto',
+          position: 'relative',
           flexGrow: 1         
         }}
       >
