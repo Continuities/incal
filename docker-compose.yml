@@ -37,6 +37,8 @@ services:
       - MAX_SPONSEES=3
       - TO_SPONSOR=2
       - TO_FULL_SPONSOR=3
+      - MAIL_FROM=authweb@localhost
+      - MAIL_SUBJECT=You're invited to authWeb
     links:
       - db:db
     depends_on:
@@ -49,3 +51,7 @@ services:
       - MONGO_INITDB_DATABASE=app
     volumes:
       - data-volume:/data/db
+
+  smtp:
+    container_name: authweb-smtp
+    image: namshi/smtp

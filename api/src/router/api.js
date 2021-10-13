@@ -18,7 +18,11 @@ import {
   removeUser
 } from '../service/user.js';
 import { sanitise } from '../service/db.js';
-import { canSponsor, saveInvite } from '../service/sponsorship.js';
+import { 
+  canSponsor, 
+  saveInvite,
+} from '../service/sponsorship.js';
+import { sendInvite } from '../service/mail.js';
 
 import type { User } from '../service/user.js';
 
@@ -106,7 +110,8 @@ export default ():any => {
       sponsors: [ currentUser.email ]
     });
 
-    await saveInvite(currentUser.email, email);
+    const invite = await saveInvite(currentUser.email, email);
+    await sendInvite(invite);
 
     req.session.user = await getUser(req.session.user.email);
 
