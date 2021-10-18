@@ -6,6 +6,8 @@
  **/
 
 import nodemailer from 'nodemailer';
+import { getUser } from './user.js';
+import { renderTemplate } from './template.js';
 import type { Invite } from './sponsorship.js';
 
 const FROM = String(process.env.MAIL_FROM);
@@ -15,22 +17,29 @@ const transporter = nodemailer.createTransport({
     host: 'smtp',
     port: 25,
     secure: false,
-    tls: { rejectUnauthorized: false },
-    debug: true, // TODO
+    tls: { rejectUnauthorized: false }
 });
 
 export const sendInvite = async (invite:Invite) => {
+  const from = await getUser(invite.from);
+  if (!from) {
+    throw `Invalid user ${invite.from}`;
+  }
   await transporter.verify();
+  const html = await renderTemplate('invite-email', {
+    community: String(process.env.COMMUNITY_NAME),
+    fromName: `${from.firstname} ${from.lastname}`,
+    toEmail: invite.to,
+    link: `${String(process.env.SERVER_URI)}/oauth/invite?slug=${invite.slug}`
+  });
   const info = await transporter.sendMail({
-    from: FROM,
+    from: {
+      name: String(process.env.MAIL_FROM_NAME),
+      address: FROM
+    },
     to: invite.to,
     subject: SUBJECT,
-    html: `
-      You've got an invite to a secret new thing! 
-      <a href='${String(process.env.SERVER_URI)}/oauth/invite?slug=${invite.slug}'>
-        Click here!
-      </a>
-    `
+    html
   });
   console.log(info);
 };

@@ -38,6 +38,7 @@ services:
       - TO_SPONSOR=2
       - TO_FULL_SPONSOR=3
       - MAIL_FROM=authweb@localhost
+      - MAIL_FROM_NAME=authWeb Mailer
       - MAIL_SUBJECT=You're invited to authWeb
     links:
       - db:db

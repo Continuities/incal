@@ -11,6 +11,7 @@ import bcrypt from 'bcrypt';
 import { getClient } from '../service/client.js';
 import { getUser, saveUser, upgradeUser } from '../service/user.js';
 import { getInvite, removeInvite } from '../service/sponsorship.js';
+import { renderTemplate } from '../service/template.js';
 
 import type { User } from '../service/user.js';
 
@@ -28,19 +29,16 @@ const forwardToLogin = async (res, callbackUri) =>
   });
 
 const forwardToView = async (res, viewName:string, viewModel:{[string]:string}) => {
-  // $FlowFixMe[incompatible-use] Flow doesn't know about import.meta.url
-  const template = (await fs.readFile(new URL(`../../static/${viewName}.html`, import.meta.url))).toString();
-  if (!template) {
-    return res.sendStatus(500);
+  try {
+    res
+      .status(200)
+      .send(await renderTemplate(viewName, viewModel));
   }
-  const rendered = Object
-    .entries(viewModel)
-    .reduce((html, variable) => html.replace(
-        new RegExp(`%{${variable[0]}}`, 'g'), 
-        String(variable[1])
-      ), template);
-
-	res.status(200).send(rendered);
+  catch(e) {
+    res
+      .status(500)
+      .send(e);
+  }
 };
 
 const isExpired = (time) => Date.now() >= time;
