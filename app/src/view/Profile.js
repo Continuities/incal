@@ -36,14 +36,12 @@ import {
   Close,
   AddAPhoto
 } from '@mui/icons-material';
-import { useGet, ApiResolver, doPut, doDelete } from '@service/api';
-import { useCurrentUser, useToken } from '@service/auth';
+import { auth, api } from '@authweb/service';
 import UserList from '@view/UserList';
 import Content from '@view/Content';
 import Username from '@view/Username';
 
-import type { User } from '@service/api';
-import type { UserAction } from "../service/api";
+import type { User, UserAction } from '@authweb/service';
 
 type Props = {|
   user: User,
@@ -60,14 +58,15 @@ const Profile = ({ user, refresh }: Props):React$Node => {
     actions,
     photo
   } = user;
-  const [ current, refreshCurrent ] = useCurrentUser();
-  const [ token,, logout ] = useToken();
+  const [ current, refreshCurrent ] = auth.useCurrentUser();
+  const { token, deleteToken } = auth.useToken();
   const [ disableButtons, setDisableButtons ] = useState(false);
   const [ tab, setTab ] = useState(0);
   const [ isUploading, setUploading ] = useState(false);
   const me = current.status === 'success' ? current.result : null;
   const isMe = me?.email === user.email;
   const userActions:Set<UserAction> = new Set(actions);
+  const Api = api.useApi();
 
   const canSponsor = userActions.has('sponsor') || userActions.has('remove_sponsor');
 
@@ -81,10 +80,10 @@ const Profile = ({ user, refresh }: Props):React$Node => {
 
   const isAnchor = user.tags.includes('anchor');
 
-  const addSponsor = button(() => doPut(`/user/${email}/sponsors/${me?.email || ''}`, token));
-  const remSponsor = button(() => doDelete(`/user/${email}/sponsors/${me?.email || ''}`, token));
-  const addAnchor = button(() => doPut(`/anchors/${email}`, token));
-  const removeAnchor = button(() => doDelete(`/anchors/${email}`, token));
+  const addSponsor = button(() => Api.doPut(`/user/${email}/sponsors/${me?.email || ''}`, token));
+  const remSponsor = button(() => Api.doDelete(`/user/${email}/sponsors/${me?.email || ''}`, token));
+  const addAnchor = button(() => Api.doPut(`/anchors/${email}`, token));
+  const removeAnchor = button(() => Api.doDelete(`/anchors/${email}`, token));
 
   return (
     <Grid container 
@@ -159,7 +158,7 @@ const Profile = ({ user, refresh }: Props):React$Node => {
         <ButtonGroup size='small' disabled={disableButtons}>
           { isMe && (
             <Tooltip title='Logout'>
-              <IconButton onClick={logout}>
+              <IconButton onClick={deleteToken}>
                 <Logout />
               </IconButton>
             </Tooltip>
@@ -223,7 +222,8 @@ const Profile = ({ user, refresh }: Props):React$Node => {
 };
 
 const UploadAvatarButton = ({ onBegin, onComplete }) => {
-  const [ token ] = useToken();
+  const { token } = auth.useToken();
+  const Api = api.useApi();
   return (
     <>
       <IconButton 
@@ -253,7 +253,7 @@ const UploadAvatarButton = ({ onBegin, onComplete }) => {
           onBegin();
           const formData = new FormData();
           formData.append('avatar', file);
-          doPut('/user/photo', token, formData).finally(onComplete);
+          Api.doPut('/user/photo', token, formData).finally(onComplete);
         }}/>
     </>
   );

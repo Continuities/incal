@@ -14,44 +14,16 @@ import {
 } from '@mui/material';
 import OAuthPopup from 'react-oauth-popup';
 import { 
-  generateRandomString, 
-  pkceChallengeFromVerifier 
-} from "@service/crypto";
-import {
-  ClientConfig,
-  ServerConfig,
-  getToken
-} from '@service/auth';
+  crypto, 
+  auth 
+} from "@authweb/service";
+import { Client, Server } from '../config';
 
-import type { Token } from '@service/auth';
+import type { ClientConfig, Token } from '@authweb/service';
 
-type Props = {|
-  onLogin: Token => void,
-|};
-
-const Login = ({ onLogin }: Props):React$Node => {
+const Login = ():React$Node => {
   const navigate = useNavigate();
-  const [ state, setState ] = useState(generateRandomString());
-  const [ verify, setVerify ] = useState(generateRandomString());
-  const [ challenge, setChallenge ] = useState(generateRandomString());
-
-  useEffect(() => {
-    verify && pkceChallengeFromVerifier(verify)
-      .then(setChallenge);
-  }, [ verify ]);
-
-  const params = useMemo(() => 
-    new URLSearchParams({
-      response_type: 'code',
-      client_id: ClientConfig.id,
-      state,
-      scope: ClientConfig.scope,
-      redirect_uri: ClientConfig.redirectUri,
-      code_challenge: challenge,
-      code_challenge_method: 'S256'
-    }).toString(),
-    [ state, challenge, verify ]
-  );
+  const { params, onCode } = auth.useOAuth2(Client);
 
   return (
     <Grid 
@@ -64,13 +36,10 @@ const Login = ({ onLogin }: Props):React$Node => {
     >
       <Grid item>
         <OAuthPopup
-          url={`${ServerConfig.authorize}?${params}`}
-          onCode={code => 
-            getToken(code, verify)
-              .then(token => {
-                onLogin(token);
-                navigate('/', { replace: true });
-              })}
+          url={`${Server.authorizeUri}?${params}`}
+          onCode={code => onCode(code).then(() => {
+            navigate('/', { replace: true });
+          })}
           onClose={() => {}}
         >
           <Button 

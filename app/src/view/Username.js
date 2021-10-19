@@ -17,7 +17,7 @@ import {
   MarkunreadMailboxOutlined
 } from '@mui/icons-material';
 
-import type { User, UserStub } from '@service/api';
+import type { User, UserStub } from '@authweb/service';
 
 type Props = {|
   user:User | UserStub,

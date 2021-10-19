@@ -1,6 +1,5 @@
 FROM node:latest
-
-ADD . /opt/app
+COPY ./app /opt/app
 
 WORKDIR /opt/app
 RUN yarn install --production

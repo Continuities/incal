@@ -10,12 +10,18 @@ import {
   Grid
 } from '@mui/material';
 import Navigation from '@view/Navigation';
+import Login from '@view/Login';
+import { auth } from '@authweb/service';
 
 type Props = {|
   children: React$Node
 |};
 
 const Frame = ({ children }: Props):React$Node => {
+  const { token } = auth.useToken();
+  if (!token) {
+    return <Login />;
+  }
   return (
     <Grid 
       container

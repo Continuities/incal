@@ -5,16 +5,19 @@
  * @flow
  **/
 
-import React, { useState, useEffect } from 'react';
+import React, { 
+  useState, 
+  useEffect,
+  createContext,
+  useContext
+} from 'react';
 import {
   Grid,
   CircularProgress
 } from '@mui/material';
-import { useToken } from '@service/auth';
+import { useToken } from './auth';
 
-import type { Token } from '@service/auth';
-
-const API = process.env.REACT_APP_API_URI || '';
+import type { Token } from './auth';
 
 export type ApiStatus = 
   'success' | 
@@ -74,48 +77,71 @@ export type User = {|
   actions: Array<UserAction>
 |};
 
-const doFetch = async <T> ({ query, method, token, body = null, signal }): Promise<ApiResponse<T>> => {
-  const headers:any = {
-    Accept: 'application/json'
-  };
+type ApiFunction = <T> (string, ?Token, ?AbortSignal) => Promise<ApiResponse<T>>
 
-  if (token) {
-    headers.Authorization = `${token.token_type} ${token.access_token}`;
-  }
-  const request:any = {
-    method,
-    signal,
-    headers
-  };
-  if (body) {
-    request.body = body;
-  }
-  const sep = API.endsWith('/') || query.startsWith('/') ? '' : '/';
-  const response = await fetch(`${API}${sep}${query}`, request);
-  if (!response.ok) {
-    return {
-      status: 'error',
-      code: response.status,
-      description: response.statusText
-    };
-  }
-  if (response.status === 204) {
-    return {
-      status: 'success_empty'
-    };
-  }
-  return {
-    status: 'success',
-    result: await response.json()
-  };
-};
+type FetchParams = {|
+  query: string,
+  method: 'GET' | 'PUT' | 'DELETE' | 'POST',
+  token: ?Token,
+  body?:any,
+  signal:AbortSignal
+|}
 
-export const doGet = async <T> (query:string, token?:?Token, signal?:AbortSignal): Promise<ApiResponse<T>> => 
-  doFetch({ query, method: 'GET', token, signal });
-export const doPut = async <T> (query:string, token?:?Token, body?:any, signal?:AbortSignal): Promise<ApiResponse<T>> => 
-  doFetch({ query, method: 'PUT', body, token, signal });
-export const doDelete = async <T> (query:string, token:?Token, signal?:AbortSignal): Promise<ApiResponse<T>> => 
-  doFetch({ query, method: 'DELETE', token, signal });
+type ApiType = {|
+  doFetch: <T> (FetchParams) => Promise<ApiResponse<T>>,
+  doGet: ApiFunction,
+  doPut: <T> (string, ?Token, ?any, ?AbortSignal) => Promise<ApiResponse<T>>,
+  doDelete: ApiFunction
+|};
+
+const Api = (apiUri:string):ApiType => ({
+
+  doFetch: async <T> ({ query, method, token, body = null, signal }): Promise<ApiResponse<T>> => {
+    const headers:any = {
+      Accept: 'application/json'
+    };
+
+    if (token) {
+      headers.Authorization = `${token.token_type} ${token.access_token}`;
+    }
+    const request:any = {
+      method,
+      signal,
+      headers
+    };
+    if (body) {
+      request.body = body;
+    }
+    const sep = apiUri.endsWith('/') || query.startsWith('/') ? '' : '/';
+    const response = await fetch(`${apiUri}${sep}${query}`, request);
+    if (!response.ok) {
+      return {
+        status: 'error',
+        code: response.status,
+        description: response.statusText
+      };
+    }
+    if (response.status === 204) {
+      return {
+        status: 'success_empty'
+      };
+    }
+    return {
+      status: 'success',
+      result: await response.json()
+    };
+  },
+
+  doGet: async function<T> (query:string, token?:?Token, signal?:?AbortSignal): Promise<ApiResponse<T>> { 
+    return this.doFetch({ query, method: 'GET', token, signal })
+  },
+  doPut: async function<T> (query:string, token?:?Token, body?:any, signal?:?AbortSignal): Promise<ApiResponse<T>> {
+    return this.doFetch({ query, method: 'PUT', token, body, signal });
+  },
+  doDelete: async function<T> (query:string, token?:?Token, signal?:?AbortSignal): Promise<ApiResponse<T>> {
+    return this.doFetch({ query, method: 'DELETE', token, signal });
+  }
+});
 
 type ResolverProps<T> = {|
   children: T => React$Node,
@@ -158,9 +184,30 @@ export const ApiResolver = <T>({ children, error, data }: ResolverProps<T>):Reac
   return children(data);
 };
 
+
+const ApiContext = createContext<any>(null);
+type ApiProps = {|
+  uri: string,
+  children: React$Node
+|};
+export const ApiProvider = ({ uri, children }: ApiProps):React$Node => {
+  const [ api, setApi ] = useState(() => Api(uri));
+  return (
+    <ApiContext.Provider value={api}>
+      {children}
+    </ApiContext.Provider>
+  );
+};
+
+export const useApi = ():ApiType => useContext(ApiContext);
+
 export const useGet = <T> (query:string, resend:number = 0):ApiResponse<T> => {
   const [ response, setResponse ] = useState({ status: 'pending' });
-  const [ token, refreshToken ] = useToken();
+  const api = useContext(ApiContext);
+  if (!api) {
+    throw 'Cannot useGet outside of ApiProvider';
+  }
+  const { token, refreshToken } = useToken();
 
   useEffect(() => {
     if (response.status !== 'error' || response.code !== 401) { return; }
@@ -170,7 +217,7 @@ export const useGet = <T> (query:string, resend:number = 0):ApiResponse<T> => {
 
   useEffect(() => {
     const controller = new AbortController();
-    doGet(query, token, controller.signal)
+    api.doGet(query, token, controller.signal)
       .then(setResponse)
       .catch(() => { /* Ignore obsolete requests */ });
     return () => controller.abort();

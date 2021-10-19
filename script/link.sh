@@ -1,0 +1,14 @@
+#! /bin/bash
+
+# Links shared libraries with apps
+dir=$(dirname $0)
+echo $dir
+
+(cd $dir/../app/node_modules/react;yarn unlink && yarn link)
+(cd $dir/../app/node_modules/react;yarn link)
+(cd $dir/../app/node_modules/@mui/material;yarn unlink)
+(cd $dir/../app/node_modules/@mui/material;yarn link)
+(cd $dir/../shared/service;yarn link react && yarn link @mui/material)
+(cd $dir/../shared/service;yarn unlink)
+(cd $dir/../shared/service;yarn link)
+(cd $dir/../app;yarn link @authweb/service)

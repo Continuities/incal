@@ -4,11 +4,12 @@ services:
 
   app:
     build:
-      dockerfile: Dockerfile.dev
+      dockerfile: app/Dockerfile.dev
     environment:
       - NODE_ENV=development
     volumes:
       - ./app:/opt/app
+      - /opt/app/node_modules # anonymous volume for node_modules only
     ports:
       - 3000:3000 # For docker to know where to redirect HMR queries
 

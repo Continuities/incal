@@ -10,15 +10,15 @@ import { useParams } from 'react-router-dom';
 import Content from '@view/Content';
 import Profile from '@view/Profile';
 import Orphan from '@view/Orphan';
-import { useGet, ApiResolver } from '@service/api';
+import { api } from '@authweb/service';
 
 const ProfilePage = ():React$Node => {
   const { email } = useParams();
   const [ refresh, setRefresh ] = useState(0);
-  const response = useGet(`/user/${email || ''}`, refresh);
+  const response = api.useGet(`/user/${email || ''}`, refresh);
   return (
     <Content>
-      <ApiResolver 
+      <api.ApiResolver 
         data={response}
         error={({ code, description }) => 
           code === 401 ? <Orphan /> : description}
@@ -26,7 +26,7 @@ const ProfilePage = ():React$Node => {
         {user => <Profile 
           user={user} 
           refresh={() => setRefresh(r => r + 1)} />}
-      </ApiResolver>
+      </api.ApiResolver>
     </Content>
   );
 };

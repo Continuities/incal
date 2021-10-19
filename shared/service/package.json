@@ -1,0 +1,30 @@
+{
+  "name": "@authweb/service",
+  "version": "0.1.0",
+  "description": "Shared service modules for authWeb applications",
+  "main": "dist/index.js",
+  "author": "mtownsend",
+  "license": "MIT",
+  "private": true,
+  "browserslist": "> 5%, not dead",
+  "scripts": {
+    "prepack": "npm run build",
+    "build": "babel src/ -d dist && flow-copy-source src dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@babel/cli": "^7.15.7",
+    "@babel/core": "^7.15.5",
+    "@babel/eslint-parser": "^7.15.7",
+    "@babel/preset-env": "^7.15.6",
+    "@babel/preset-flow": "^7.14.5",
+    "@babel/preset-react": "^7.14.5",
+    "eslint": "^8.3.0",
+    "eslint-plugin-flowtype": "^8.0.3",
+    "eslint-plugin-react": "^7.26.1",
+    "flow-bin": "^0.165.1",
+    "flow-copy-source": "^2.0.9"
+  }
+}

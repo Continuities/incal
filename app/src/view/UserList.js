@@ -20,7 +20,7 @@ import Username from '@view/Username';
 import type { 
   UserStub, 
   ApiResponse
-} from '@service/api';
+} from '@authweb/service';
 
 type Props = {|
   users: Array<UserStub>,

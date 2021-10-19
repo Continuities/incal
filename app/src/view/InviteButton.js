@@ -19,8 +19,7 @@ import {
 import {
   PersonAdd
 } from '@mui/icons-material';
-import { useToken } from '@service/auth';
-import { doPut } from '@service/api';
+import { auth, api } from '@authweb/service';
 
 type Props = {|
   onInvite?:() => void,
@@ -32,12 +31,13 @@ const InviteButton = ({ sx, onInvite }: Props):React$Node => {
   const [ email, setEmail ] = useState('');
   const [ error, setError ] = useState(null);
   const [ success, setSuccess ] = useState(false);
-  const [ token ] = useToken();
+  const { token } = auth.useToken();
+  const Api = api.useApi();
 
   const close = () => setDialogOpen(false);
   const invite = async e => {
     e.preventDefault();
-    const response = await doPut(`/user/sponsees/${email}`, token);
+    const response = await Api.doPut(`/user/sponsees/${email}`, token);
     if (response.status === 'error') {
       setError(response.description);
     }

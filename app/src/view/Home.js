@@ -9,19 +9,18 @@ import React from 'react';
 import Content from '@view/Content';
 import Profile from '@view/Profile';
 import Orphan from '@view/Orphan';
-import { ApiResolver } from '@service/api';
-import { useCurrentUser } from "@service/auth";
+import { api, auth } from '@authweb/service';
 
 const Home = ():React$Node => {
-  const [ response, refresh ] = useCurrentUser();
+  const [ response, refresh ] = auth.useCurrentUser();
   return (
     <Content>
-    <ApiResolver 
+    <api.ApiResolver 
       data={response}
       error={() => <Orphan />}
     >
       {user => <Profile user={user} refresh={refresh} />}
-    </ApiResolver>
+    </api.ApiResolver>
     </Content>
   );
 };

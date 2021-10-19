@@ -14,7 +14,7 @@ export const useStorage = <T>(key:string, session:bool = false, defaultValue:?T 
 
   const setItem = newVal => {
     const s = JSON.stringify(newVal);
-    storage.setItem(key, s);
+    storage.setItem(key, String(s));
     setVal(s);
   };
 

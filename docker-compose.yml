@@ -17,7 +17,8 @@ services:
 
   app:
     build: 
-      context: ./app
+      context: .
+      dockerfile: app/Dockerfile
     image: authweb-app
     environment:
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
