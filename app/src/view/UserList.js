@@ -42,7 +42,7 @@ const UserList = ({ users, title }: Props):React$Node => {
           key={user.email}
         >
           <ListItemIcon>
-            <Avatar>{(user.firstname || user.email)[0]}</Avatar>
+            <Avatar src={user.photo && `/public/${user.photo}`}>{(user.firstname || user.email)[0]}</Avatar>
           </ListItemIcon>
           <Username user={user} />
         </ListItemButton>

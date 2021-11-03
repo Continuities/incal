@@ -8,7 +8,6 @@
 import React from 'react';
 import { 
   Link, 
-  useRouteMatch, 
   useLocation 
 } from 'react-router-dom';
 import {
@@ -29,13 +28,9 @@ const tabs = {
 
 const Navigation = ():React$Node => {
   const location = useLocation();
-  const route = useRouteMatch({ 
-    path: location.pathname, 
-    exact: true 
-  });
   
   return (
-    <BottomNavigation value={route.path}>
+    <BottomNavigation value={location.pathname}>
       {/* $FlowFixMe[incompatible-use] this destructure is safe */}
       {Object.entries(tabs).map(([path, [ Icon, label ]]) => (
         <BottomNavigationAction 

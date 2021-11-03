@@ -63,6 +63,7 @@ export type UserStub = {|
   email: string,
   firstname?: string,
   lastname?: string,
+  photo?: string,
   tags: Array<UserTag>
 |};
 
@@ -73,7 +74,7 @@ export type User = {|
   actions: Array<UserAction>
 |};
 
-const doFetch = async <T> (query, method, token, signal): Promise<ApiResponse<T>> => {
+const doFetch = async <T> ({ query, method, token, body = null, signal }): Promise<ApiResponse<T>> => {
   const headers:any = {
     Accept: 'application/json'
   };
@@ -81,12 +82,16 @@ const doFetch = async <T> (query, method, token, signal): Promise<ApiResponse<T>
   if (token) {
     headers.Authorization = `${token.token_type} ${token.access_token}`;
   }
-  const sep = API.endsWith('/') || query.startsWith('/') ? '' : '/';
-  const response = await fetch(`${API}${sep}${query}`, { 
+  const request:any = {
     method,
-    signal, 
-    headers 
-  });
+    signal,
+    headers
+  };
+  if (body) {
+    request.body = body;
+  }
+  const sep = API.endsWith('/') || query.startsWith('/') ? '' : '/';
+  const response = await fetch(`${API}${sep}${query}`, request);
   if (!response.ok) {
     return {
       status: 'error',
@@ -106,11 +111,11 @@ const doFetch = async <T> (query, method, token, signal): Promise<ApiResponse<T>
 };
 
 export const doGet = async <T> (query:string, token?:?Token, signal?:AbortSignal): Promise<ApiResponse<T>> => 
-  doFetch(query, 'GET', token, signal);
-export const doPut = async <T> (query:string, token?:?Token, signal?:AbortSignal): Promise<ApiResponse<T>> => 
-  doFetch(query, 'PUT', token, signal);
+  doFetch({ query, method: 'GET', token, signal });
+export const doPut = async <T> (query:string, token?:?Token, body?:any, signal?:AbortSignal): Promise<ApiResponse<T>> => 
+  doFetch({ query, method: 'PUT', body, token, signal });
 export const doDelete = async <T> (query:string, token:?Token, signal?:AbortSignal): Promise<ApiResponse<T>> => 
-  doFetch(query, 'DELETE', token, signal);
+  doFetch({ query, method: 'DELETE', token, signal });
 
 type ResolverProps<T> = {|
   children: T => React$Node,

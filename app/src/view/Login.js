@@ -6,7 +6,7 @@
  **/
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Container,
   Button,
@@ -30,7 +30,7 @@ type Props = {|
 |};
 
 const Login = ({ onLogin }: Props):React$Node => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [ state, setState ] = useState(generateRandomString());
   const [ verify, setVerify ] = useState(generateRandomString());
   const [ challenge, setChallenge ] = useState(generateRandomString());
@@ -69,7 +69,7 @@ const Login = ({ onLogin }: Props):React$Node => {
             getToken(code, verify)
               .then(token => {
                 onLogin(token);
-                history.replace({});
+                navigate('/', { replace: true });
               })}
           onClose={() => {}}
         >

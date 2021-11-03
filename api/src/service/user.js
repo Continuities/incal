@@ -6,6 +6,11 @@
  **/
 
 import collection, { sanitise } from './db.js';
+import { promises as fs } from 'fs';
+import { createHash } from 'crypto';
+import { join } from 'path';
+
+import type { ReadStream } from 'fs';
 
 export type UserTag = 
   'anchor' |
@@ -21,6 +26,7 @@ export type UserStub = {|
 
 export type User = {|
   ...UserStub,
+  photo: ?string,
   sponsors: Array<UserStub>,
   sponsees: Array<UserStub>,
   hash: string
@@ -115,6 +121,17 @@ export const removeAnchor = async (email:string) => {
   await users.updateOne({ email }, { $set: { isAnchor: false }});
 };
 
+export const setPhoto = async (user:string, stream:ReadStream, format:string):Promise<string> => {
+  const users = await collection(COLLECTION);
+  const fileBuffer = await streamToBuffer(stream);
+  const fileHash = createHash('md5');
+  fileHash.update(fileBuffer);
+  const filename = `${fileHash.digest('hex')}.${format}`;
+  await fs.writeFile(join('public', filename), fileBuffer);
+  await users.updateOne({ email: user }, { $set: { photo: filename }});
+  return filename;
+}
+
 export const refreshUserMiddleware = async (req:any, res:any, next:any) => {
   const { user } = req.session;
   if (user) {
@@ -122,3 +139,11 @@ export const refreshUserMiddleware = async (req:any, res:any, next:any) => {
   }
   next();
 }
+
+const streamToBuffer = (stream:ReadStream):Promise<Buffer> => 
+  new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+    stream.on('error', (err) => reject(err));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+  });

@@ -22,14 +22,14 @@ if (!port || isNaN(port)) {
 
 const app:any = express();
 
-const somethingAsync = async () => 'FOOOO';
-
 const oauth = new OAuthServer({ model: authModel });
 app.use(cors());
 app.use(express.json({ type: [ 'application/json' ] }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: 'nyanyanyanyan' }));
 app.use(refreshUserMiddleware);
+
+app.use('/public', express.static('public'))
 
 app.use('/oauth', AuthRouter(oauth));
 

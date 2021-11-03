@@ -22,7 +22,8 @@ import {
   IconButton,
   Tooltip,
   Tabs,
-  Tab
+  Tab,
+  Badge
 } from '@mui/material';
 import {
   Logout,
@@ -30,7 +31,8 @@ import {
   PersonRemove,
   ConnectWithoutContact,
   Anchor,
-  Close
+  Close,
+  AddAPhoto
 } from '@mui/icons-material';
 import { useGet, ApiResolver, doPut, doDelete } from '@service/api';
 import { useCurrentUser, useToken } from '@service/auth';
@@ -53,7 +55,8 @@ const Profile = ({ user, refresh }: Props):React$Node => {
     lastname, 
     sponsors,
     sponsees,
-    actions
+    actions,
+    photo
   } = user;
   const [ current, refreshCurrent ] = useCurrentUser();
   const [ token,, logout ] = useToken();
@@ -88,13 +91,32 @@ const Profile = ({ user, refresh }: Props):React$Node => {
       spacing={3}
     >
       <Grid item>
-        <Avatar sx={{
-          width: 200,
-          height: 200,
-          fontSize: 'h1.fontSize'
-        }}>
-          {(firstname || email)[0].toUpperCase()}
-        </Avatar>
+        <Badge
+          overlap="circular"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          badgeContent={<UploadAvatarButton />}
+          invisible={!isMe}
+          sx={{ 
+            '& .MuiBadge-badge': {
+              width: 'auto',
+              height: 'auto',
+              padding: 0,
+              borderRadius: '50%',
+              bgcolor: 'background.paper'
+            }
+          }}
+        >
+          <Avatar 
+            src={photo && `/public/${photo}`}
+            sx={{
+              width: 200,
+              height: 200,
+              fontSize: 'h1.fontSize'
+            }}
+          >
+            { (firstname || email)[0].toUpperCase() }
+          </Avatar>
+        </Badge>
       </Grid>
       <Grid item align='center'>
         <Username user={user} variant='h1' justify='center' />
@@ -171,6 +193,42 @@ const Profile = ({ user, refresh }: Props):React$Node => {
       </Grid>
     </Grid>
   )
+};
+
+const UploadAvatarButton = () => {
+  const [ token ] = useToken();
+  return (
+    <>
+      <IconButton 
+        color='primary'
+        component='label'
+        htmlFor='photo-input'
+      >
+        <AddAPhoto />
+      </IconButton>
+      <input 
+        type='file'
+        id='photo-input'
+        name='avatar'
+        accept='image/*'
+        style={{
+          position: 'absolute',
+          height: '1px',
+          width: '1px',
+          overflow: 'hidden',
+          clip: 'rect(1px, 1px, 1px, 1px)'
+        }}
+        onChange={e => {
+          const file = e.target?.files?.item(0);
+          if (!file) {
+            return;
+          }
+          const formData = new FormData();
+          formData.append('avatar', file);
+          doPut('/user/photo', token, formData);
+        }}/>
+    </>
+  );
 };
 
 export default Profile;

@@ -8,7 +8,7 @@
 import React from 'react';
 import { 
   BrowserRouter, 
-  Switch, 
+  Routes, 
   Route, 
   useParams 
 } from 'react-router-dom';
@@ -37,20 +37,12 @@ const App = ():React$Node => {
         <TokenProvider>
           <UserProvider>
             <Frame>
-              <Switch>
-                <Route path='/users'>
-                  <Directory />
-                </Route>
-                <Route path='/settings'>
-                  <Settings />
-                </Route>
-                <Route path='/:email'>
-                  <ProfilePage />
-                </Route>
-                <Route exact path='/'>
-                  <Home />
-                </Route>
-              </Switch>
+              <Routes>
+                <Route path='/users' element={<Directory />} />
+                <Route path='/settings' element={<Settings />} />
+                <Route path='/:email' element={<ProfilePage />} />
+                <Route exact path='/' element={<Home />} />
+              </Routes>
             </Frame>
           </UserProvider>
         </TokenProvider>

@@ -6,6 +6,7 @@
  **/
 
 import express from 'express';
+import Busboy from 'busboy';
 import { 
   getUser, 
   getUsers, 
@@ -15,7 +16,8 @@ import {
   addAnchor,
   removeAnchor,
   saveUser,
-  removeUser
+  removeUser,
+  setPhoto
 } from '../service/user.js';
 import { sanitise } from '../service/db.js';
 import { 
@@ -33,7 +35,6 @@ const withAnchorSponsors = async user => ({
     : (await getAnchors())
       .filter(a => a.email !== user.email)
 });
-
 
 export default ():any => {
   const router = express.Router();
@@ -138,6 +139,18 @@ export default ():any => {
     await removeUser(email);
     req.session.user = await getUser(req.session.user.email);
     res.sendStatus(204);
+  });
+
+  router.put('/user/photo', (req, res) => {
+    const bus = new Busboy({ headers: req.headers });
+    bus.on('file', (fieldname, file, filename, encoding, mimetype) => {
+      setPhoto(req.session.user.email, file, mimetype.substring(mimetype.indexOf('/') + 1));
+    });
+    bus.on('finish', () => {
+      res.writeHead(204, { 'Connection': 'close' });
+      res.end();
+    });
+    return req.pipe(bus);
   });
 
   // Add a sponsor

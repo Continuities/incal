@@ -8,7 +8,7 @@ services:
   nginx:
     build:
       context: ./nginx
-    image: maker-nginx
+    image: authweb-nginx
     ports:
       - 80:80
     depends_on:
@@ -22,6 +22,7 @@ services:
     environment:
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
       - PORT=3000
+
   api:
     build:
       context: ./api
@@ -41,21 +42,19 @@ services:
       - MAIL_FROM_NAME=authWeb Mailer
       - MAIL_SUBJECT=You're invited to authWeb
     links:
-      - db:db
+      - db
     depends_on:
       - db
 
   db:
     container_name: authweb-db
-    image: mongo:latest
+    image: mongo:5.0.4
     environment:
       - MONGO_INITDB_DATABASE=app
     volumes:
       - data-volume:/data/db
 
   smtp:
-    container_name: authweb-smtp
-    image: namshi/smtp
-    volumes:
-      - ./dkim/config:/etc/exim4/_docker_additional_macros:ro
-      - ./dkim/domain.key:/etc/exim4/domain.key:ro
+    build:
+      context: ./smtp
+    image: authweb-smtp
