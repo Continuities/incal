@@ -23,7 +23,9 @@ import {
   Tooltip,
   Tabs,
   Tab,
-  Badge
+  Badge,
+  CircularProgress,
+  Backdrop
 } from '@mui/material';
 import {
   Logout,
@@ -62,6 +64,7 @@ const Profile = ({ user, refresh }: Props):React$Node => {
   const [ token,, logout ] = useToken();
   const [ disableButtons, setDisableButtons ] = useState(false);
   const [ tab, setTab ] = useState(0);
+  const [ isUploading, setUploading ] = useState(false);
   const me = current.status === 'success' ? current.result : null;
   const isMe = me?.email === user.email;
   const userActions:Set<UserAction> = new Set(actions);
@@ -94,7 +97,15 @@ const Profile = ({ user, refresh }: Props):React$Node => {
         <Badge
           overlap="circular"
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          badgeContent={<UploadAvatarButton />}
+          badgeContent={
+            <UploadAvatarButton 
+              onBegin={() => setUploading(true)}
+              onComplete={() => {
+                setUploading(false);
+                refresh();
+              }}
+            />
+          }
           invisible={!isMe}
           sx={{ 
             '& .MuiBadge-badge': {
@@ -106,6 +117,22 @@ const Profile = ({ user, refresh }: Props):React$Node => {
             }
           }}
         >
+          <Backdrop
+            sx={{ 
+              color: '#fff', 
+              zIndex: (theme) => theme.zIndex.drawer + 1 
+            }}
+            open={isUploading}
+            onClick={() => console.log('TODO')}
+          />
+          { isUploading && <CircularProgress 
+            size={180}
+            sx={{ 
+              position: 'absolute',
+              top: 10,
+              left: 10,
+              zIndex: 999
+            }} /> }
           <Avatar 
             src={photo && `/public/${photo}`}
             sx={{
@@ -195,7 +222,7 @@ const Profile = ({ user, refresh }: Props):React$Node => {
   )
 };
 
-const UploadAvatarButton = () => {
+const UploadAvatarButton = ({ onBegin, onComplete }) => {
   const [ token ] = useToken();
   return (
     <>
@@ -223,9 +250,10 @@ const UploadAvatarButton = () => {
           if (!file) {
             return;
           }
+          onBegin();
           const formData = new FormData();
           formData.append('avatar', file);
-          doPut('/user/photo', token, formData);
+          doPut('/user/photo', token, formData).finally(onComplete);
         }}/>
     </>
   );
