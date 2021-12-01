@@ -146,14 +146,19 @@ export default ():any => {
 
   router.put('/user/photo', (req, res) => {
     const bus = new Busboy({ headers: req.headers });
-    bus.on('file', async (fieldname, file, filename, encoding, mimetype) => {
-      const photo = await savePhoto(file, mimetype.substring(mimetype.indexOf('/') + 1));
-      updatePhoto(req.session.user.email, photo);
-    });
-    bus.on('finish', () => {
-      res.writeHead(204, { 'Connection': 'close' });
-      res.end();
-    });
+    
+    const filePromise = new Promise(resolve => 
+      bus.on('file', async (fieldname, file, filename, encoding, mimetype) => 
+        resolve(await savePhoto(file, mimetype.substring(mimetype.indexOf('/') + 1)))));
+    const uploadPromise = new Promise(resolve =>
+      bus.on('finish', resolve));
+
+    Promise.all([ filePromise, uploadPromise ])
+      .then(([ photo ]) => updatePhoto(req.session.user.email, photo))
+      .then(() => {
+        res.writeHead(204, { 'Connection': 'close' });
+        res.end();
+      });
     return req.pipe(bus);
   });
 

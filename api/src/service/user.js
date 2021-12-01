@@ -121,9 +121,9 @@ export const removeAnchor = async (email:string) => {
   await users.updateOne({ email }, { $set: { isAnchor: false }});
 };
 
-export const updatePhoto = async (user:string, filename:string) => {
+export const updatePhoto = async (user:string, filename:string):Promise<void> => {
   const users = await collection(COLLECTION);
-  await users.updateOne({ email: user }, { $set: { photo: filename }});
+  return await users.updateOne({ email: user }, { $set: { photo: filename }});
 };
 
 export const refreshUserMiddleware = async (req:any, res:any, next:any) => {
