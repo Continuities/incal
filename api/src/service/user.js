@@ -121,16 +121,10 @@ export const removeAnchor = async (email:string) => {
   await users.updateOne({ email }, { $set: { isAnchor: false }});
 };
 
-export const setPhoto = async (user:string, stream:ReadStream, format:string):Promise<string> => {
+export const updatePhoto = async (user:string, filename:string) => {
   const users = await collection(COLLECTION);
-  const fileBuffer = await streamToBuffer(stream);
-  const fileHash = createHash('md5');
-  fileHash.update(fileBuffer);
-  const filename = `${fileHash.digest('hex')}.${format}`;
-  await fs.writeFile(join('public', filename), fileBuffer);
   await users.updateOne({ email: user }, { $set: { photo: filename }});
-  return filename;
-}
+};
 
 export const refreshUserMiddleware = async (req:any, res:any, next:any) => {
   const { user } = req.session;
@@ -138,12 +132,4 @@ export const refreshUserMiddleware = async (req:any, res:any, next:any) => {
     req.session.user = await getUser(user.email);
   }
   next();
-}
-
-const streamToBuffer = (stream:ReadStream):Promise<Buffer> => 
-  new Promise((resolve, reject) => {
-    const chunks = [];
-    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-    stream.on('error', (err) => reject(err));
-    stream.on('end', () => resolve(Buffer.concat(chunks)));
-  });
+};

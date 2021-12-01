@@ -2,6 +2,7 @@ version: '3'
 
 volumes:
   data-volume:
+  public-volume:
 
 services:
 
@@ -32,6 +33,7 @@ services:
       - PORT=8080
       - DB_URI=mongodb://db
       - DB_NAME=app
+      - PUBLIC_PATH=/data/public
       - SERVER_URI=http://localhost
       - COMMUNITY_NAME=authWeb
       - SALT_ROUNDS=10
@@ -44,6 +46,8 @@ services:
       - MAIL_SUBJECT=You're invited to authWeb
     links:
       - db
+    volumes:
+      - public-volume:/data/public
     depends_on:
       - db
 

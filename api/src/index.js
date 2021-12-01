@@ -20,6 +20,10 @@ if (!port || isNaN(port)) {
   throw 'No PORT specified'
 }
 
+if (!process.env.PUBLIC_PATH) {
+  throw 'PUBLIC_PATH not set';
+}
+
 const app:any = express();
 
 const oauth = new OAuthServer({ model: authModel });
@@ -29,7 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: 'nyanyanyanyan' }));
 app.use(refreshUserMiddleware);
 
-app.use('/public', express.static('public'))
+app.use('/public', express.static(String(process.env.PUBLIC_PATH)));
 
 app.use('/oauth', AuthRouter(oauth));
 
