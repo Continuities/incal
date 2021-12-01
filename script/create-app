@@ -1,0 +1,463 @@
+#! /bin/bash
+
+if [[ -z "$1" ]]; then
+  echo "Usage: create-app <app-name>"
+  exit 1
+fi
+
+APP_PATH=$PWD/$1
+SCRIPT_PATH=$(realpath $(dirname $0))
+
+echo "Creating ${APP_PATH}..."
+mkdir -p $APP_PATH/app
+mkdir -p $APP_PATH/api
+
+
+echo "
+version: '3'
+
+services:
+
+  $1-app:
+    build: 
+      context: .
+      dockerfile: $1/app/Dockerfile
+    image: $1-app
+    environment:
+      - EXTRA_WEBPACK_DEV_SERVER_ARGS
+      - PORT=3000
+
+  $1-api:
+    build:
+      context: $1/api
+    image: $1-api
+    environment:
+      - PORT=8080
+      - DB_URI=mongodb://db
+      - DB_NAME=$1
+      - SERVER_URI=http://localhost
+    links:
+      - db
+    depends_on:
+      - db
+" > $APP_PATH/$1.yml
+
+echo "Initialising React app..."
+cd $APP_PATH/app
+mkdir static
+mkdir -p src/view
+cp $SCRIPT_PATH/../app/static/nyan.svg static/favicon.svg
+echo "{
+  \"name\": \"$1\",
+  \"version\": \"0.1.0\",
+  \"description\": \"\",
+  \"repository\": \"git@github.com:Continuities/authweb.git\",
+  \"author\": \"\",
+  \"license\": \"MIT\",
+  \"private\": true,
+  \"browserslist\": \"> 5%, not dead\",
+  \"scripts\": {
+    \"dev\": \"webpack serve --mode=development\",
+    \"build\": \"webpack --mode=production\",
+    \"start\": \"nodemon server.mjs\"
+  }
+}" > package.json
+
+echo "
+REACT_APP_AUTH_URI=http://localhost/oauth/authorize
+REACT_APP_TOKEN_URI=http://localhost/oauth/token
+REACT_APP_APP_URI=http://localhost
+REACT_APP_API_URI=http://localhost
+" > .env
+
+echo "
+src/index.js
+babel.config.cjs
+webpack.config.cjs
+server.js
+**/dist/*
+**/static/*
+" > .eslintignore
+
+echo "{
+  \"extends\": [
+    \"eslint:recommended\",
+    \"plugin:react/recommended\",
+    \"plugin:flowtype/recommended\"
+  ],
+  \"env\": {
+    \"es6\": true,
+    \"node\": true,
+    \"browser\": true,
+    \"jest\": true
+  },
+  \"parser\": \"babel-eslint\",
+  \"plugins\": [ \"flowtype\" ],
+  \"rules\": {
+    \"indent\": [\"error\", 2],
+    \"flowtype/require-valid-file-annotation\": [
+      2,
+      \"always\"
+    ],
+    \"flowtype/space-after-type-colon\": \"off\",
+    \"react/display-name\": \"off\"
+  },
+  \"settings\": {
+    \"react\": {
+      \"version\": \"detect\"
+    },
+    \"flowVersion\": \"0.146\"
+  }
+}" > .eslintrc
+
+echo "
+[ignore]
+
+[include]
+
+[libs]
+./flow-typed
+
+[options]
+module.name_mapper='^@view' ->'<PROJECT_ROOT>/src/view'
+module.name_mapper='^@static' ->'<PROJECT_ROOT>/static'
+module.name_mapper='^@service' ->'<PROJECT_ROOT>/src/service'
+
+[strict]
+" > .flowconfig
+
+echo "
+module.exports = {
+  presets: [
+    \"@babel/env\", 
+    \"@babel/preset-react\",
+    \"@babel/preset-flow\"
+  ],
+  sourceMaps: \"both\"
+};
+" > babel.config.js
+
+echo "
+FROM node:latest
+COPY ./$1/app /opt/app
+
+WORKDIR /opt/app
+RUN yarn install --production
+
+EXPOSE 3000
+
+CMD [ \"yarn\", \"start\" ]
+" > Dockerfile
+
+echo "
+FROM node:latest
+
+# use changes to package.json to force Docker not to use the cache
+# when we change our application's nodejs dependencies:
+COPY ./$1/app/package.json /tmp/app/package.json
+COPY ./$1/app/yarn.lock /tmp/app/yarn.lock
+RUN cd /tmp/app && yarn install
+RUN mkdir -p /opt/app && cp -a /tmp/app/node_modules /opt/app/
+
+# build and link shared libs
+COPY ./shared /opt/shared
+RUN cd /opt/shared/service && yarn && yarn build
+COPY ./script /opt/script
+RUN /opt/script/link
+
+WORKDIR /opt/app
+
+EXPOSE 3000
+
+CMD [ \"yarn\", \"dev\" ]
+" > Dockerfile.dev
+
+echo "
+/**
+ * Basic static server for production builds
+ **/
+
+import express from 'express';
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(express.static('dist'));
+
+app.get('*', (req, res) => {
+  res.sendFile('index.html', { root: './dist' });
+});
+
+app.listen(port, () => console.log(\`App hosted on port \${port}\`));
+" > server.mjs
+
+echo "
+const path = require('path');
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
+
+require('dotenv').config({ path: './.env' }); 
+
+module.exports = {
+  output: {
+    path: path.join(__dirname, '/dist'),
+    filename: 'index.bundle.js',
+    publicPath: '/'
+  },
+  devtool: 'eval-source-map',
+  devServer: {
+    port: 3000,
+    historyApiFallback: {
+      disableDotRule: true
+    }
+  },
+  module: {
+    rules: [{
+      resourceQuery: /raw/,
+      type: 'asset/source'
+    }, {
+      test: /\\.(js|jsx)\$/,
+      exclude: /node_modules/,
+      use: {
+        loader: 'babel-loader'
+      }
+    }, {
+      test: /\\.css$/,
+      use: ['style-loader', 'css-loader']
+    }, {
+      test: /\\.(jpg|png|svg|otf|ttf)\$/,
+      resourceQuery: { not: [ /raw/ ] },
+      type: 'asset'
+    }]
+  },
+  resolve: { 
+    alias: {
+      '@view': path.resolve(__dirname, 'src', 'view'),
+      '@service': path.resolve(__dirname, 'src', 'service'),
+      '@static': path.resolve(__dirname, 'static')
+    }
+  },
+  plugins: [
+    new webpack.EnvironmentPlugin([
+      'REACT_APP_AUTH_URI',
+      'REACT_APP_TOKEN_URI',
+      'REACT_APP_APP_URI',
+      'REACT_APP_API_URI'
+    ]),
+    new HtmlWebpackPlugin({ 
+      template: './static/index.html',
+      title: '$1'
+    }),
+    new FaviconsWebpackPlugin({
+      logo: './static/favicon.svg',
+      prefix: 'static/'
+    })
+  ]
+}
+" > webpack.config.js
+
+echo "
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=\"utf-8\" />
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap\" />
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <style type='text/css'>
+      html, body, #app {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>Javascript required. Sorry 😿</noscript>
+    <div id=\"app\"></div>
+    <div id=\"portal\"></div>
+  </body>
+</html>
+" > static/index.html
+
+echo "
+/**
+ * Just bootstraps React
+ * @flow
+ **/
+
+import React from 'react';
+window.react = window.React = React;
+import ReactDom from 'react-dom';
+import App from '@view/App.js';
+const app = document.getElementById('app');
+app && ReactDom.render(
+  <App />,
+  app
+);
+" > src/index.js
+
+echo "
+/**
+ * MUI theme
+ * https://mui.com/customization/default-theme/
+ * @flow
+ **/
+
+import { createTheme } from '@mui/material/styles';
+
+type MUITheme = any;
+
+const theme:MUITheme = createTheme({
+  palette: {
+    // TODO: Palette overrides
+  },
+  typography: {
+    h1: {
+      fontSize: '2rem'
+    }
+  },
+  components: {
+    // TODO: MUI component overrides
+  }
+});
+
+export default theme;
+" > src/theme.js
+
+echo "
+/**
+ * Main App entry point
+ * @flow
+ **/
+
+import React from 'react';
+import { 
+  BrowserRouter, 
+  Routes, 
+  Route, 
+  useParams 
+} from 'react-router-dom';
+import { 
+  CssBaseline 
+} from '@mui/material';
+import {
+  ThemeProvider
+} from '@mui/material/styles';
+import theme from '../theme';
+
+
+const API = process.env.REACT_APP_API_URI || '';
+
+const App = ():React\$Node => {
+  return (
+    <BrowserRouter>
+      <CssBaseline />
+      <ThemeProvider theme={theme}>
+        $1
+      </ThemeProvider>
+    </BrowserRouter>
+  );
+};
+
+export default App;
+" > src/view/App.js
+
+yarn add -D @babel/core @babel/eslint-parser @babel/preset-env @babel/preset-flow @babel/preset-react @emotion/react @emotion/styled @mui/icons-material @mui/material @mui/system babel-loader copy-webpack-plugin css-loader dotenv eslint eslint-plugin-flowtype eslint-plugin-react eslint-webpack-plugin favicons favicons-webpack-plugin flow-bin html-webpack-plugin react react-dom react-oauth-popup react-router react-router-dom webpack webpack-cli webpack-dev-server
+yarn add express nodemon
+
+echo "Initialising backend API..."
+cd $APP_PATH/api
+mkdir src
+
+echo "{
+  \"name\": \"$1-api\",
+  \"type\": \"module\",
+  \"version\": \"0.1.0\",
+  \"description\": \"Backend for $1\",
+  \"main\": \"index.js\",
+  \"license\": \"MIT\",
+  \"private\": true,
+  \"scripts\": {
+    \"eslint\": \"eslint ./src\",
+    \"flow:check\": \"flow check\",
+    \"flow:build\": \"flow-remove-types ./src/ -d ./dist/ --all --pretty\",
+    \"build\": \"yarn eslint && yarn flow:check && yarn flow:build\",
+    \"serve\": \"yarn flow:build && PORT=8080 node --inspect=0.0.0.0:9229 ./dist/index.js\",
+    \"start\": \"nodemon --watch src -x \\\"yarn serve\\\"\"
+  }
+}" > package.json
+
+echo "
+[ignore]
+
+[include]
+
+[libs]
+./flow-typed
+
+[options]
+
+[strict]
+" > .flowconfig
+
+echo "
+FROM node:latest
+
+ADD . /opt/api
+
+WORKDIR /opt/api
+RUN yarn install
+
+EXPOSE 8080
+
+CMD [ \"yarn\", \"start\" ]
+" > Dockerfile
+
+echo "
+FROM node:latest
+
+# use changes to package.json to force Docker not to use the cache
+# when we change our application's nodejs dependencies:
+ADD package.json /tmp/package.json
+ADD yarn.lock /tmp/yarn.lock
+RUN cd /tmp && yarn install
+RUN mkdir -p /opt/api && cp -a /tmp/node_modules /opt/api/
+
+WORKDIR /opt/api
+
+EXPOSE 8080
+EXPOSE 9229
+
+CMD [ \"yarn\", \"start\" ]
+" > Dockerfile.dev
+
+echo "
+/**
+ * Main entry point for backend API
+ * @flow
+ **/
+
+import express from 'express';
+import cors from 'cors';
+
+const port = parseInt(process.env.PORT);
+if (!port || isNaN(port)) {
+  throw 'No PORT specified'
+}
+
+const app:any = express();
+
+app.use(cors());
+app.use(express.json({ type: [ 'application/json' ] }));
+app.use(express.urlencoded({ extended: true }));
+
+app.use('/', async (req, res) => res.send('Hello from $1'));
+
+app.listen(port, () => console.log(\`API started on port \${port}\`));
+
+export default app;
+" > src/index.js
+
+yarn add -D flow-bin
+yarn add cors express flow-remove-types mongodb nodemon 
+
+echo "App initialised at $APP_PATH"

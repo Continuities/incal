@@ -2,7 +2,6 @@
 
 # Links shared libraries with apps
 dir=$(dirname $0)
-echo $dir
 
 (cd $dir/../app/node_modules/react;yarn unlink && yarn link)
 (cd $dir/../app/node_modules/react;yarn link)

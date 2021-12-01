@@ -11,7 +11,7 @@ RUN mkdir -p /opt/app && cp -a /tmp/app/node_modules /opt/app/
 COPY ./shared /opt/shared
 RUN cd /opt/shared/service && yarn && yarn build
 COPY ./script /opt/script
-RUN /opt/script/link.sh
+RUN /opt/script/link
 
 WORKDIR /opt/app
 

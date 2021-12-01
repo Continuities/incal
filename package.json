@@ -16,10 +16,9 @@
     "ps": "docker-compose ps",
     "restart": "docker-compose restart",
     "uninstall": "docker-compose down --rmi all",
-    "connect:api": "docker-compose exec api bash",
-    "connect:app": "docker-compose exec app bash",
-    "connect:db": "docker-compose exec db mongo",
-    "connect:nginx": "docker-compose exec nginx bash"
+    "connect": "wrap () { docker-compose exec \"$*\" bash; }; wrap",
+    "start:app": "wrap () { docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml up -d; }; wrap",
+    "stop:app": "wrap () { docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml down && docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml rm -vf; }; wrap"
   },
   "dependencies": {}
 }
