@@ -18,16 +18,16 @@ version: '3'
 
 services:
 
-  $1-app:
+  $1_app:
     build: 
       context: .
-      dockerfile: $1/app/Dockerfile
+      dockerfile: $1/app/Dockerfile.dev
     image: $1-app
     environment:
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
       - PORT=3000
 
-  $1-api:
+  $1_api:
     build:
       context: $1/api
     image: $1-api
@@ -41,6 +41,36 @@ services:
     depends_on:
       - db
 " > $APP_PATH/$1.yml
+
+echo "
+version: '3'
+
+services:
+
+  $1_app:
+    build:
+      dockerfile: $1/app/Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./$1/app:/opt/app
+      - /opt/app/node_modules # anonymous volume for node_modules only
+    ports:
+      - 3000:3000 # For docker to know where to redirect HMR queries
+
+  $1_api:
+    build:
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./$1/api:/opt/api
+      - /opt/api/node_modules # anonymous volume for node_modules only
+    ports:
+      - 8080:8080 # unbind this in prod
+      - 9229:9229 # node debugger
+
+" > $APP_PATH/$1.dev.yml
 
 echo "Initialising React app..."
 cd $APP_PATH/app
@@ -207,8 +237,16 @@ module.exports = {
   devtool: 'eval-source-map',
   devServer: {
     port: 3000,
+    client: {
+      webSocketURL: {
+        hostname: '0.0.0.0',
+        pathname: '/$1/ws',
+        port: 3000
+      },
+    },
     historyApiFallback: {
-      disableDotRule: true
+      disableDotRule: true,
+      index: '/$1/'
     }
   },
   module: {
@@ -245,8 +283,12 @@ module.exports = {
       'REACT_APP_API_URI'
     ]),
     new HtmlWebpackPlugin({ 
-      template: './static/index.html',
-      title: '$1'
+      filename: path.join(__dirname, 'dist', 'index.html'),
+      template: path.join(__dirname, 'static', 'index.html'),
+      title: '$1',
+      metadata: {
+        baseUrl: '/$1/'
+      }
     }),
     new FaviconsWebpackPlugin({
       logo: './static/favicon.svg',

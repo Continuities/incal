@@ -17,8 +17,10 @@
     "restart": "docker-compose restart",
     "uninstall": "docker-compose down --rmi all",
     "connect": "wrap () { docker-compose exec \"$*\" bash; }; wrap",
-    "start:app": "wrap () { docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml up -d; }; wrap",
-    "stop:app": "wrap () { docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml down && docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml rm -vf; }; wrap"
+    "build:app": "wrap () { docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml -f \"$*\"/\"$*\".dev.yml build; }; wrap",
+    "start:app": "wrap () { docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml -f \"$*\"/\"$*\".dev.yml up -d; }; wrap",
+    "logs:app": "wrap () { docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml -f \"$*\"/\"$*\".dev.yml logs -f; }; wrap",
+    "stop:app": "wrap () { docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml -f \"$*\"/\"$*\".dev.yml down && docker-compose -f docker-compose.yml -f docker-compose.override.yml -f \"$*\"/\"$*\".yml -f \"$*\"/\"$*\".dev.yml rm -vf; }; wrap"
   },
   "dependencies": {}
 }
