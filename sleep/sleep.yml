@@ -11,9 +11,10 @@ services:
   sleep_app:
     build: 
       context: .
-      dockerfile: sleep/app/Dockerfile.dev
+      dockerfile: sleep/app/Dockerfile
     image: sleep-app
     environment:
+      - NODE_ENV=production
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
       - PORT=3000
 
