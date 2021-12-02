@@ -21,9 +21,10 @@ services:
   $1_app:
     build: 
       context: .
-      dockerfile: $1/app/Dockerfile.dev
+      dockerfile: $1/app/Dockerfile
     image: $1-app
     environment:
+      - NODE_ENV=production
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
       - PORT=3000
 
