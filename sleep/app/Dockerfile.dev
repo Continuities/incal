@@ -1,0 +1,22 @@
+
+FROM node:latest
+
+# use changes to package.json to force Docker not to use the cache
+# when we change our application's nodejs dependencies:
+COPY ./sleep/app/package.json /tmp/app/package.json
+COPY ./sleep/app/yarn.lock /tmp/app/yarn.lock
+RUN cd /tmp/app && yarn install
+RUN mkdir -p /opt/app && cp -a /tmp/app/node_modules /opt/app/
+
+# build and link shared libs
+COPY ./shared /opt/shared
+RUN cd /opt/shared/service && yarn && yarn build
+COPY ./script /opt/script
+RUN /opt/script/link
+
+WORKDIR /opt/app
+
+EXPOSE 3000
+
+CMD [ "yarn", "dev" ]
+

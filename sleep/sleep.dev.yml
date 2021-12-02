@@ -1,0 +1,28 @@
+
+version: '3'
+
+services:
+
+  sleep_app:
+    build:
+      dockerfile: sleep/app/Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./sleep/app:/opt/app
+      - /opt/app/node_modules # anonymous volume for node_modules only
+    ports:
+      - 3000:3000 # For docker to know where to redirect HMR queries
+
+  sleep_api:
+    build:
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./sleep/api:/opt/api
+      - /opt/api/node_modules # anonymous volume for node_modules only
+    # ports: TODO!
+    #   - 8080:8080 # unbind this in prod
+    #   - 9229:9229 # node debugger
+

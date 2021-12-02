@@ -1,0 +1,33 @@
+
+version: '3'
+
+services:
+
+  nginx:
+    depends_on:
+      - sleep_app
+      - sleep_api
+
+  sleep_app:
+    build: 
+      context: .
+      dockerfile: sleep/app/Dockerfile.dev
+    image: sleep-app
+    environment:
+      - EXTRA_WEBPACK_DEV_SERVER_ARGS
+      - PORT=3000
+
+  sleep_api:
+    build:
+      context: sleep/api
+    image: sleep-api
+    environment:
+      - PORT=8080
+      - DB_URI=mongodb://db
+      - DB_NAME=sleep
+      - SERVER_URI=http://localhost
+    links:
+      - db
+    depends_on:
+      - db
+

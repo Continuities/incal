@@ -11,3 +11,6 @@ dir=$(dirname $0)
 (cd $dir/../shared/service;yarn unlink)
 (cd $dir/../shared/service;yarn link)
 (cd $dir/../app;yarn link @authweb/service)
+
+(cd $dir/../sleep/app;yarn link react && yarn link @authweb/service)
+
