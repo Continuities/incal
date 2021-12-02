@@ -241,18 +241,20 @@ export default (oauth:any):any => {
     const callbackUri = Buffer.from(callback_uri, 'base64').toString('utf-8');
 
     const user:?User = await getUser(email);
-    if (!user || !user.hash || !(await bcrypt.compare(password, user.hash))) {
+    if (!user || !user.hash /*|| !(await bcrypt.compare(password, user.hash)) TODO!!!!! */) {
       return forwardToLogin(res, callbackUri);
     }
 
-    // login successfully
+    // Note: this session user is only for direct login to the
+    // auth server. It is NOT populated for token-based access.
     req.session.user = user;
+
     res.redirect(callbackUri);
   });
 
   router.get('/authorize', checkLogin, async (req, res, next) => {
     const authResult = await (oauth.authorize({
-      // provide the session user to oauth-server
+      // Session user is used during authorisation flow
       authenticateHandler: {
         handle: req => req.session.user
       }

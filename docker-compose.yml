@@ -53,7 +53,7 @@ services:
 
   db:
     container_name: authweb-db
-    image: mongo:5.0.4
+    image: mongo:4.4.10
     environment:
       - MONGO_INITDB_DATABASE=app
     volumes:

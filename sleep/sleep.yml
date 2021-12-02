@@ -1,0 +1,39 @@
+
+version: '3'
+
+services:
+
+  nginx:
+    depends_on:
+      - sleep_app
+      - sleep_api
+
+  sleep_app:
+    build: 
+      context: .
+      dockerfile: sleep/app/Dockerfile
+    image: sleep-app
+    environment:
+      - NODE_ENV=production
+      - EXTRA_WEBPACK_DEV_SERVER_ARGS
+      - REACT_APP_API_URI=http://localhost/sleep/api
+      - PORT=3000
+
+  sleep_api:
+    build:
+      context: sleep/api
+    image: sleep-api
+    environment:
+      - PORT=8080
+      - DB_URI=mongodb://db
+      - DB_NAME=sleep
+      - APP_URI=http://localhost/sleep
+      - API_URI=http://localhost/sleep/api
+      - TOKEN_URI=http://api:8080/oauth/token
+      - USER_URI=http://api:8080/user
+      - SESSION_TIME=86400
+    links:
+      - db
+    depends_on:
+      - db
+

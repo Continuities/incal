@@ -59,9 +59,9 @@ const depopulate = (token:{ ...BaseAuth }):any => {
   };
 };
 
-export const getAccessToken = async (tokenString:string):Promise<?AccessToken> => populate(await accessStore.get(tokenString));
-export const getRefreshToken = async (tokenString:string):Promise<?RefreshToken> => populate(await refreshStore.get(tokenString));
-export const getAuthorisationCode = async (authString:string):Promise<?AuthorisationCode> => populate(await authStore.get(authString));
+export const getAccessToken = async (tokenString:string):Promise<?AccessToken> => populate(accessStore.get(tokenString));
+export const getRefreshToken = async (tokenString:string):Promise<?RefreshToken> => populate(refreshStore.get(tokenString));
+export const getAuthorisationCode = async (authString:string):Promise<?AuthorisationCode> => populate(authStore.get(authString));
 
 export const saveAccessToken = async (token:AccessToken):Promise<empty> => 
   accessStore.setExpiration(token.accessToken, depopulate(token), token.accessTokenExpiresAt);

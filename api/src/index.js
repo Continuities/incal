@@ -13,7 +13,7 @@ import AuthRouter from './router/auth.js';
 import ApiRouter from './router/api.js';
 import authModel from './oauth2-model.js';
 import { authorise } from './service/sponsorship.js';
-import { refreshUserMiddleware } from './service/user.js';
+import { refreshSessionUserMiddleware } from './service/user.js';
 
 const port = parseInt(process.env.PORT);
 if (!port || isNaN(port)) {
@@ -31,7 +31,7 @@ app.use(cors());
 app.use(express.json({ type: [ 'application/json' ] }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: 'nyanyanyanyan' }));
-app.use(refreshUserMiddleware);
+app.use(refreshSessionUserMiddleware);
 
 app.use('/public', express.static(String(process.env.PUBLIC_PATH)));
 

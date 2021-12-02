@@ -8,6 +8,7 @@
 import express from 'express';
 import Busboy from 'busboy';
 import { 
+  getCurrentUser,
   getUser, 
   getUsers, 
   addSponsor,
@@ -45,7 +46,7 @@ export default ():any => {
   // Someone else's profile
   router.get('/user/:email', async (req, res) => {
     const { email } = req.params;
-    const currentUser:User = req.session.user;
+    const currentUser = getCurrentUser(req, res);
     const user = await getUser(email);
     if (!user) {
       return res.sendStatus(404);
@@ -72,7 +73,7 @@ export default ():any => {
 
   // Your profile
   router.get('/user', async (req, res) => {
-    const { user } = req.session;
+    const user = getCurrentUser(req, res);
     const actions = [];
 
     await canSponsor(user) && actions.push('invite_sponsee');
@@ -80,7 +81,7 @@ export default ():any => {
     res.json(
       sanitise(
         await withAnchorSponsors({
-          ...req.session.user,
+          ...user,
           actions
         })
       )
@@ -96,7 +97,7 @@ export default ():any => {
   // Invite a sponsee
   router.put('/user/sponsees/:email', async (req, res) => {
     const { email } = req.params;
-    const { user: currentUser } = req.session;
+    const currentUser = getCurrentUser(req, res);
     if (!email) { // TODO: Validate email
       return res.status(400).send('Invalid email');
     }
@@ -117,15 +118,13 @@ export default ():any => {
     const invite = await saveInvite(currentUser.email, email);
     await sendInvite(invite);
 
-    req.session.user = await getUser(req.session.user.email);
-
     res.sendStatus(204);
   });
 
   // Cancel an invite
   router.delete('/user/sponsees/:email', async (req, res) => {
     const { email } = req.params;
-    const { user: currentUser } = req.session;
+    const currentUser = getCurrentUser(req, res);
     if (!email) {
       return res.status(400).send('Param email required');
     }
@@ -140,12 +139,13 @@ export default ():any => {
     }
 
     await removeUser(email);
-    req.session.user = await getUser(req.session.user.email);
+    
     res.sendStatus(204);
   });
 
   router.put('/user/photo', (req, res) => {
     const bus = new Busboy({ headers: req.headers });
+    const { email } = getCurrentUser(req, res);
     
     const filePromise = new Promise(resolve => 
       bus.on('file', async (fieldname, file, filename, encoding, mimetype) => 
@@ -154,7 +154,7 @@ export default ():any => {
       bus.on('finish', resolve));
 
     Promise.all([ filePromise, uploadPromise ])
-      .then(([ photo ]) => updatePhoto(req.session.user.email, photo))
+      .then(([ photo ]) => updatePhoto(email, photo))
       .then(() => {
         res.writeHead(204, { 'Connection': 'close' });
         res.end();
@@ -178,7 +178,7 @@ export default ():any => {
     }
 
     await addSponsor(email, sponsorEmail);
-    req.session.user = await getUser(req.session.user.email);
+    
     res.sendStatus(204);
   });
 
@@ -199,14 +199,14 @@ export default ():any => {
     }
 
     await removeSponsor(email, sponsorEmail);
-    req.session.user = await getUser(req.session.user.email);
+    
     res.sendStatus(204);
   });
 
   // Make someone an anchor
   router.put('/anchors/:email', async (req, res) => {
     const { email } = req.params;
-    if (!req.session.user.tags.includes('anchor')) {
+    if (!getCurrentUser(req, res).tags.includes('anchor')) {
       return res.sendStatus(401);
     }
 
@@ -216,14 +216,14 @@ export default ():any => {
     }
 
     await addAnchor(email);
-    req.session.user = await getUser(req.session.user.email);
+    
     res.sendStatus(204);
   });
 
   // Remoke an anchor
   router.delete('/anchors/:email', async (req, res) => {
     const { email } = req.params;
-    if (!req.session.user.tags.includes('anchor')) {
+    if (!getCurrentUser(req, res).tags.includes('anchor')) {
       return res.sendStatus(401);
     }
 
@@ -233,7 +233,7 @@ export default ():any => {
     }
 
     await removeAnchor(email);
-    req.session.user = await getUser(req.session.user.email);
+    
     res.sendStatus(204);
   });
 

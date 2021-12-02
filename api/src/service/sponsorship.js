@@ -6,7 +6,7 @@
  **/
 
 import collection from './db.js';
-import { getSponsees } from './user.js';
+import { getUser, getSponsees } from './user.js';
 import type { User } from './user.js';
 import { v4 as uuid } from 'uuid';
 
@@ -66,10 +66,12 @@ export const canSponsor = async (sponsor:?User, user?:?User):Promise<bool> => {
 };
 
 export const authorise = async (req:any, res:any, next:any):Promise<empty> => {
-  const { user } = req.session;
+  const { token } = res.locals.oauth;
+  const user = token?.user;
   if (!user || user.tags.includes('orphan')) {
     return res.sendStatus(401);
   }
+  res.locals.authWeb = { user };
   return next();
 };
 

@@ -1,0 +1,31 @@
+{
+  "name": "sleep-api",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Backend for sleep",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "eslint": "eslint ./src",
+    "flow:check": "flow check",
+    "flow:build": "flow-remove-types ./src/ -d ./dist/ --all --pretty",
+    "build": "yarn eslint && yarn flow:check && yarn flow:build",
+    "serve": "yarn flow:build && PORT=8080 node --inspect=0.0.0.0:9229 ./dist/index.js",
+    "start": "nodemon --watch src -x \"yarn serve\""
+  },
+  "devDependencies": {
+    "flow-bin": "^0.165.1"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "flow-remove-types": "^2.165.1",
+    "mongodb": "^4.2.1",
+    "node-fetch": "^3.1.0",
+    "nodemon": "^2.0.15",
+    "simple-memory-storage": "waychan23/simple-memory-storage",
+    "uuid": "^8.3.2"
+  }
+}

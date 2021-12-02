@@ -1,0 +1,51 @@
+{
+  "name": "sleep",
+  "version": "0.1.0",
+  "description": "",
+  "repository": "git@github.com:Continuities/authweb.git",
+  "author": "",
+  "license": "MIT",
+  "private": true,
+  "browserslist": "> 5%, not dead",
+  "scripts": {
+    "dev": "webpack serve --mode=development",
+    "build": "webpack --mode=production",
+    "start": "nodemon server.mjs"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.16.0",
+    "@babel/eslint-parser": "^7.16.3",
+    "@babel/preset-env": "^7.16.4",
+    "@babel/preset-flow": "^7.16.0",
+    "@babel/preset-react": "^7.16.0",
+    "@emotion/react": "^11.7.0",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.2.0",
+    "@mui/material": "^5.2.2",
+    "@mui/system": "^5.2.2",
+    "babel-loader": "^8.2.3",
+    "copy-webpack-plugin": "^10.0.0",
+    "css-loader": "^6.5.1",
+    "dotenv": "^10.0.0",
+    "eslint": "^8.3.0",
+    "eslint-plugin-flowtype": "^8.0.3",
+    "eslint-plugin-react": "^7.27.1",
+    "eslint-webpack-plugin": "^3.1.1",
+    "favicons": "^6.2.2",
+    "favicons-webpack-plugin": "^5.0.2",
+    "flow-bin": "^0.165.1",
+    "html-webpack-plugin": "^5.5.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-oauth-popup": "^1.0.5",
+    "react-router": "^6.0.2",
+    "react-router-dom": "^6.0.2",
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.6.0"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.15"
+  }
+}

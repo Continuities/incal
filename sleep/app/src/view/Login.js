@@ -17,6 +17,7 @@ import {
   crypto, 
   auth 
 } from "@authweb/service";
+import { setCookie } from '@service/cookie';
 import { Client, Server } from '../config';
 
 import type { ClientConfig, Token } from '@authweb/service';
@@ -24,7 +25,8 @@ import type { ClientConfig, Token } from '@authweb/service';
 const Login = ():React$Node => {
   const navigate = useNavigate();
   const state = useMemo(crypto.generateRandomString, []);
-  const { params, onCode } = auth.useOAuth2(Client, state);
+  const { params } = auth.useOAuth2(Client, state);
+  setCookie('state', state);
 
   return (
     <Grid 
@@ -38,9 +40,9 @@ const Login = ():React$Node => {
       <Grid item>
         <OAuthPopup
           url={`${Server.authorizeUri}?${params}`}
-          onCode={code => onCode(code).then(() => {
-            navigate('/', { replace: true });
-          })}
+          // onCode={code => onCode(code).then(() => {
+          //   navigate('/', { replace: true });
+          // })}
           onClose={() => {}}
         >
           <Button 

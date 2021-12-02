@@ -26,6 +26,17 @@ const CLIENTS:{ [string]: Client } = {
     redirectUris: [ process.env.SERVER_URI || '' ],
     // short-lived refresh token of 1 day, since it lives in an SPA
     refreshTokenLifetime: 60 * 60 * 24
+  },
+
+  'sleep': {
+    id: 'sleep',
+    name: 'Sleep',
+    clientSecret: 'nyanyanyan',
+    scopes: [ 'user_info:read' ],
+    grants: [ 'authorization_code', 'refresh_token' ],
+    redirectUris: [ 
+      'http://localhost/sleep/api/login'
+    ]
   }
 };
 
