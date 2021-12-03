@@ -26,5 +26,5 @@ Development steps
 -
 1. Clone the repo
 2. `yarn install`
-3. `yarn start` to start applicatio is development mode
+3. `yarn start` to start application in development mode
 4. Use `yarn start:app <appname>` if you want to work on an optional application
