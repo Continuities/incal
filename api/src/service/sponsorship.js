@@ -5,7 +5,7 @@
  * @flow
  **/
 
-import collection from './db.js';
+// import collection from './db.js';
 import { getSponsees } from './user.js';
 import type { User } from './user.js';
 import { v4 as uuid } from 'uuid';
@@ -74,23 +74,23 @@ export const authorise = async (req:any, res:any, next:any):Promise<empty> => {
 };
 
 export const saveInvite = async (from:string, to:string):Promise<Invite> => {
-  const col = await collection(INVITE_COLLECTION);
+  // const col = await collection(INVITE_COLLECTION);
   const invite = {
     from,
     to,
     slug: uuid()
   };
-  await col.insertOne(invite);
+  // await col.insertOne(invite);
   return invite;
 };
 
 export const getInvite = async (slug:?string):Promise<?Invite> => {
   if (!slug) { return null; }
-  const col = await collection(INVITE_COLLECTION);
-  return col.findOne({ slug });
+  // const col = await collection(INVITE_COLLECTION);
+  // return col.findOne({ slug });
 };
 
 export const removeInvite = async (slug:?string):Promise<void> => {
-  const col = await collection(INVITE_COLLECTION);
-  return col.deleteOne({ slug });
+  // const col = await collection(INVITE_COLLECTION);
+  // return col.deleteOne({ slug });
 }

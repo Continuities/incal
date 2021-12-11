@@ -5,7 +5,7 @@
  * @flow
  **/
 
-import collection, { sanitise } from './db.js';
+import /*collection,*/ { sanitise } from './db.js';
 import { promises as fs } from 'fs';
 import { createHash } from 'crypto';
 import { join } from 'path';
@@ -21,7 +21,8 @@ export type UserStub = {|
   email: string,
   firstname: string,
   lastname: string,
-  tags: Array<UserTag>
+  tags: Array<UserTag>,
+  isAnchor?:boolean
 |}
 
 export type User = {|
@@ -53,77 +54,90 @@ const withTags = user => {
 }
 
 export const getUser = async (email:string):Promise<?User> => {
-  const users = await collection(COLLECTION);
-  const user = await users.findOne({ email });
+  // const users = await collection(COLLECTION);
+  // const user = await users.findOne({ email });
+  const user = {
+    email: 'fake@fake.com',
+    firstname: 'Fake',
+    lastname: 'McFakerson',
+    hash: 'FAKE',
+    sponsors: [],
+    sponsees: [],
+    isAnchor: true,
+    photo: null
+  };
   if (!user) {
     return null;
   }
-  user.sponsors = await Promise.all(user.sponsors.map(async s => {
-    return sanitise(withTags(await users.findOne({ email: s })));
-  }));
-  user.sponsees = (await getSponsees(email))
-    .map(sanitise)
-    .map(toStub);
+  // user.sponsors = await Promise.all(user.sponsors.map(async s => {
+  //   return sanitise(withTags(await users.findOne({ email: s })));
+  // }));
+  // user.sponsees = (await getSponsees(email))
+  //   .map(sanitise)
+  //   .map(toStub);
   return withTags(user);
 };
 
 export const saveUser = async (user:any):Promise<User> => {
-  const users = await collection(COLLECTION);
-  await users.insertOne(user);
+  // const users = await collection(COLLECTION);
+  // await users.insertOne(user);
   return withTags(user);
 };
 
 export const upgradeUser = async (email:string, firstname:string, lastname: string, hash:string):Promise<void> => {
-  const users = await collection(COLLECTION);
-  await users.updateOne({ email }, { $set: { firstname, lastname, hash }});
+  // const users = await collection(COLLECTION);
+  // await users.updateOne({ email }, { $set: { firstname, lastname, hash }});
 };
 
 export const removeUser = async (email:string):Promise<void> => {
-  const users = await collection(COLLECTION);
-  await users.deleteOne({ email });
+  // const users = await collection(COLLECTION);
+  // await users.deleteOne({ email });
 }
 
 export const getUsers = async ():Promise<Array<User>> => {
-  const col = await collection(COLLECTION);
-  const users = await col.find();
-  return (await users.toArray()).map(withTags);
+  // const col = await collection(COLLECTION);
+  // const users = await col.find();
+  // return (await users.toArray()).map(withTags);
+  return [];
 };
 
 export const addSponsor = async (user:string, sponsor:string) => {
-  const users = await collection(COLLECTION);
-  await users.updateOne({ email: user }, { $push: { sponsors: sponsor }});
+  // const users = await collection(COLLECTION);
+  // await users.updateOne({ email: user }, { $push: { sponsors: sponsor }});
 };
 
 export const removeSponsor = async (user:string, sponsor:string) => {
-  const users = await collection(COLLECTION);
-  await users.updateOne({ email: user }, { $pull: { sponsors: sponsor }});
+  // const users = await collection(COLLECTION);
+  // await users.updateOne({ email: user }, { $pull: { sponsors: sponsor }});
 };
 
 export const getSponsees = async (email:string):Promise<Array<User>> => {
-  const users = await collection(COLLECTION);
-  const sponsees = await users.find({ sponsors: email });
-  return (await sponsees.toArray()).map(withTags);
+  // const users = await collection(COLLECTION);
+  // const sponsees = await users.find({ sponsors: email });
+  // return (await sponsees.toArray()).map(withTags);
+  return [];
 };
 
 export const getAnchors = async ():Promise<Array<UserStub>> => {
-  const users = await collection(COLLECTION);
-  const anchors = await users.find({ isAnchor: true });
-  return (await anchors.toArray()).map(withTags).map(toStub);
+  // const users = await collection(COLLECTION);
+  // const anchors = await users.find({ isAnchor: true });
+  // return (await anchors.toArray()).map(withTags).map(toStub);
+  return [];
 };
 
 export const addAnchor = async (email:string) => {
-  const users = await collection(COLLECTION);
-  await users.updateOne({ email }, { $set: { isAnchor: true, sponsors: [] }});
+  // const users = await collection(COLLECTION);
+  // await users.updateOne({ email }, { $set: { isAnchor: true, sponsors: [] }});
 };
 
 export const removeAnchor = async (email:string) => {
-  const users = await collection(COLLECTION);
-  await users.updateOne({ email }, { $set: { isAnchor: false }});
+  // const users = await collection(COLLECTION);
+  // await users.updateOne({ email }, { $set: { isAnchor: false }});
 };
 
 export const updatePhoto = async (user:string, filename:string):Promise<void> => {
-  const users = await collection(COLLECTION);
-  return await users.updateOne({ email: user }, { $set: { photo: filename }});
+  // const users = await collection(COLLECTION);
+  // return await users.updateOne({ email: user }, { $set: { photo: filename }});
 };
 
 export const refreshUserMiddleware = async (req:any, res:any, next:any) => {
