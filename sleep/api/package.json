@@ -22,6 +22,7 @@
     "express": "^4.17.1",
     "flow-remove-types": "^2.165.1",
     "mongodb": "^4.2.1",
+    "node-fetch": "^3.1.0",
     "nodemon": "^2.0.15"
   }
 }

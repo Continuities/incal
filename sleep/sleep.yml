@@ -16,6 +16,7 @@ services:
     environment:
       - NODE_ENV=production
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
+      - REACT_APP_API_URI=http://localhost/sleep/api
       - PORT=3000
 
   sleep_api:
