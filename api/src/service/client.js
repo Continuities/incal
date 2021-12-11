@@ -34,7 +34,10 @@ const CLIENTS:{ [string]: Client } = {
     clientSecret: 'nyanyanyan',
     scopes: [ 'user_info:read' ],
     grants: [ 'authorization_code', 'refresh_token' ],
-    redirectUris: [ 'http://localhost/sleep/api/login' ]
+    redirectUris: [ 
+      'http://localhost/sleep/api/login',
+      'http://localhost/sleep'
+    ]
   }
 };
 

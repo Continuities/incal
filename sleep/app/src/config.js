@@ -19,6 +19,6 @@ export const Client:ClientConfig = {
   id: 'sleep',
   grantType: 'authorization_code',
   scope: 'user_info:read',
-  redirectUri: process.env.REACT_APP_APP_URI || ''
+  redirectUri: `${(process.env.REACT_APP_API_URI || 'http://localhost')}/login`
 };
 

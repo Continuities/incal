@@ -22,7 +22,6 @@ services:
     volumes:
       - ./sleep/api:/opt/api
       - /opt/api/node_modules # anonymous volume for node_modules only
-    # ports: TODO!
-    #   - 8080:8080 # unbind this in prod
-    #   - 9229:9229 # node debugger
+    ports:
+      - 8081:8080 # unbind this in prod
 

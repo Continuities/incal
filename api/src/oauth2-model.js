@@ -85,7 +85,7 @@ export default {
     */
     getClient: async (clientId:string, clientSecret:?string = null):Promise<?Client> => {
       const client = await getClient(clientId);
-      if (!client || client.clientSecret !== clientSecret) {
+      if (!client || (clientSecret && (client.clientSecret !== clientSecret))) {
         return null;
       }
       return client;

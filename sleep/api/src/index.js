@@ -6,7 +6,7 @@
 
 import express from 'express';
 import cors from 'cors';
-import { getUser } from './service/auth.js';
+import { getUser, getToken } from './service/auth.js';
 
 const port = parseInt(process.env.PORT);
 if (!port || isNaN(port)) {
@@ -20,11 +20,22 @@ app.use(express.json({ type: [ 'application/json' ] }));
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/login', async (req, res) => {
+  console.log('Beginning login flow for query', req.query);
   const { code, state } = req.query;
   if (!code || !state) {
-    res.sendStatus(400);
+    return res.sendStatus(400);
   }
-  console.log(`TODO: Login with code ${code} state ${state}`);
+  
+  // TODO: Get original state from cookie
+
+  const token = await getToken(code, state);
+  if (!token) {
+    return res.sendStatus(401);
+  }
+
+  console.log('Got token', token);
+
+  res.sendStatus(200);
 });
 
 app.get('/user', async (req, res) => {

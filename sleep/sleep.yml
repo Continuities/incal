@@ -27,7 +27,8 @@ services:
       - PORT=8080
       - DB_URI=mongodb://db
       - DB_NAME=sleep
-      - SERVER_URI=http://localhost
+      - APP_URI=http://localhost/sleep
+      - TOKEN_URI=http://api:8080/oauth/token
     links:
       - db
     depends_on:
