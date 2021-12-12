@@ -28,7 +28,10 @@ services:
       - DB_URI=mongodb://db
       - DB_NAME=sleep
       - APP_URI=http://localhost/sleep
+      - API_URI=http://localhost/sleep/api
       - TOKEN_URI=http://api:8080/oauth/token
+      - USER_URI=http://api:8080/user
+      - SESSION_TIME=86400
     links:
       - db
     depends_on:

@@ -23,7 +23,8 @@ import type { ClientConfig, Token } from '@authweb/service';
 
 const Login = ():React$Node => {
   const navigate = useNavigate();
-  const { params, onCode } = auth.useOAuth2(Client);
+  const state = useMemo(crypto.generateRandomString, []);
+  const { params, onCode } = auth.useOAuth2(Client, state);
 
   return (
     <Grid 

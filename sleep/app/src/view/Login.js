@@ -17,13 +17,16 @@ import {
   crypto, 
   auth 
 } from "@authweb/service";
+import { setCookie } from '@service/cookie';
 import { Client, Server } from '../config';
 
 import type { ClientConfig, Token } from '@authweb/service';
 
 const Login = ():React$Node => {
   const navigate = useNavigate();
-  const { params } = auth.useOAuth2(Client);
+  const state = useMemo(crypto.generateRandomString, []);
+  const { params } = auth.useOAuth2(Client, state);
+  setCookie('state', state);
 
   return (
     <Grid 

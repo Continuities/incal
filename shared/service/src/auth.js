@@ -186,8 +186,7 @@ type OAuthValues = {|
   params: string,
   onCode: string => Promise<void>
 |};
-export const useOAuth2 = (client:ClientConfig):OAuthValues => {
-  const [ state, setState ] = useState(generateRandomString());
+export const useOAuth2 = (client:ClientConfig, state:string):OAuthValues => {
   const [ verify, setVerify ] = useState(generateRandomString());
   const [ challenge, setChallenge ] = useState(generateRandomString());
   const { auth, storeToken } = useContext(TokenContext);

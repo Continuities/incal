@@ -246,7 +246,15 @@ export default (oauth:any):any => {
     }
 
     // login successfully
+
+    // TODO!!! THIS DOESN'T WORK AT ALL!!!!
+    // The token belongs to the app server, not the browser
+    // but the browser session is where this user gets stored
+    // Need to pull the user from the token
     req.session.user = user;
+
+
+    
     res.redirect(callbackUri);
   });
 
@@ -254,14 +262,22 @@ export default (oauth:any):any => {
     const authResult = await (oauth.authorize({
       // provide the session user to oauth-server
       authenticateHandler: {
+
+
+        // TODO!!! THIS DOESN'T WORK AT ALL!!!!
+        // The token belongs to the app server, not the browser
+        // but the browser session is where this user gets stored
+        // Need to pull the user from the token
         handle: req => req.session.user
+
+
+
       }
     })(req, res));
     return next();
   });
 
   router.post('/token', async (req, res) => {
-    console.log(req);
     try {
       const token = await oauth.token({
         requireClientAuthentication: { 

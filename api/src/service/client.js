@@ -35,8 +35,7 @@ const CLIENTS:{ [string]: Client } = {
     scopes: [ 'user_info:read' ],
     grants: [ 'authorization_code', 'refresh_token' ],
     redirectUris: [ 
-      'http://localhost/sleep/api/login',
-      'http://localhost/sleep'
+      'http://localhost/sleep/api/login'
     ]
   }
 };

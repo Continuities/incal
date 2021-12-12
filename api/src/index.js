@@ -38,6 +38,7 @@ app.use('/public', express.static(String(process.env.PUBLIC_PATH)));
 app.use('/oauth', AuthRouter(oauth));
 
 app.use('/', 
+  (req, res, next) => { console.log(req.headers); next(); },
   oauth.authenticate({ scope: 'user_info:read' }),
   authorise,
   ApiRouter());

@@ -67,6 +67,7 @@ export const canSponsor = async (sponsor:?User, user?:?User):Promise<bool> => {
 
 export const authorise = async (req:any, res:any, next:any):Promise<empty> => {
   const { user } = req.session;
+  console.log('AUTHORISE', user);
   if (!user || user.tags.includes('orphan')) {
     return res.sendStatus(401);
   }

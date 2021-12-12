@@ -9,28 +9,43 @@ import fetch from 'node-fetch';
 import { Client, Server } from '../config.js';
 import { URLSearchParams } from "url";
 
-const AUTH_URI = process.env.AUTH_URI || 'http://localhost'
+const USER_URI = String(process.env.USER_URI);
 
-export const getUser = async ():any => {
+export const getUser = async (token:?Token = null):any => {
   const headers:any = {
     Accept: 'application/json'
   };
-  return (await fetch(
-    `${AUTH_URI}/user`, 
+  if (token) {
+    headers.Authorization = `${token.token_type} ${token.access_token}`;
+  }
+  const r = await fetch(
+    USER_URI, 
     { headers }
-  )).json();
+  );
+
+  if (!r.ok) {
+    console.log(r.status, r.statusText);
+    return null;
+  }
+
+  return r.json();
 };
 
-export const getToken = async (code:string, state:string):Promise<any> => {
-  // TODO: Compare state
+export type Token = {|
+  access_token: string,
+  token_type: 'Bearer',
+  expires_in: number,
+  scope: string
+|};
+
+export const getToken = async (code:string):Promise<?Token> => {
   const body = {
+    code,
     grant_type: Client.grantType,
     client_id: Client.id,
     client_secret: Client.clientSecret,
     redirect_uri: Client.redirectUri
   };
-
-  console.log(`Getting acccess token from ${Server.tokenUri} with code ${code}`);
 
   try {
     const r = await fetch(Server.tokenUri, {
@@ -49,7 +64,7 @@ export const getToken = async (code:string, state:string):Promise<any> => {
     return r.json();
   }
   catch (e) {
-    console.log(e);
+    console.error(e);
     return null;
   }
 };

@@ -14,5 +14,5 @@ export const Client:any = {
   grantType: 'authorization_code',
   scope: 'user_info:read',
   clientSecret: 'nyanyanyan',
-  redirectUri: process.env.APP_URI
+  redirectUri: `${String(process.env.API_URI)}/login`
 };
