@@ -140,10 +140,16 @@ export const updatePhoto = async (user:string, filename:string):Promise<void> =>
   // return await users.updateOne({ email: user }, { $set: { photo: filename }});
 };
 
-export const refreshUserMiddleware = async (req:any, res:any, next:any) => {
+export const refreshSessionUserMiddleware = async (req:any, res:any, next:any) => {
   const { user } = req.session;
   if (user) {
     req.session.user = await getUser(user.email);
   }
   next();
+};
+
+export const getCurrentUser = (req:any, res:any):User => {
+  const { user: tokenUser } = res.locals.authWeb;
+  const { user: sessionUser } = req.session;
+  return tokenUser || sessionUser;
 };

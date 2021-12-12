@@ -245,33 +245,18 @@ export default (oauth:any):any => {
       return forwardToLogin(res, callbackUri);
     }
 
-    // login successfully
-
-    // TODO!!! THIS DOESN'T WORK AT ALL!!!!
-    // The token belongs to the app server, not the browser
-    // but the browser session is where this user gets stored
-    // Need to pull the user from the token
+    // Note: this session user is only for direct login to the
+    // auth server. It is NOT populated for token-based access.
     req.session.user = user;
 
-
-    
     res.redirect(callbackUri);
   });
 
   router.get('/authorize', checkLogin, async (req, res, next) => {
     const authResult = await (oauth.authorize({
-      // provide the session user to oauth-server
+      // Session user is used during authorisation flow
       authenticateHandler: {
-
-
-        // TODO!!! THIS DOESN'T WORK AT ALL!!!!
-        // The token belongs to the app server, not the browser
-        // but the browser session is where this user gets stored
-        // Need to pull the user from the token
         handle: req => req.session.user
-
-
-
       }
     })(req, res));
     return next();
