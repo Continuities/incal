@@ -9,7 +9,7 @@ import express from 'express';
 import { promises as fs } from 'fs';
 import bcrypt from 'bcrypt';
 import { getClient } from '../service/client.js';
-import { getUser, saveUser, upgradeUser } from '../service/user.js';
+import { getAnchors, getUser, saveUser, upgradeUser } from '../service/user.js';
 import { getInvite, removeInvite } from '../service/sponsorship.js';
 import { renderTemplate } from '../service/template.js';
 
@@ -212,13 +212,17 @@ export default (oauth:any):any => {
       throw 'Non-numeric SALT_ROUNDS specified';
     }
     const hash = await bcrypt.hash(password, saltRounds);
+
+    const isAnchor = (await getAnchors()).length === 0; 
+
     try {
       await saveUser({
         email,
         firstname,
         lastname,
         hash,
-        sponsors: []
+        sponsors: [],
+        isAnchor
       });
     }
     catch (e) {
