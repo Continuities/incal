@@ -22,11 +22,17 @@ import { Client, Server } from '../config';
 
 import type { ClientConfig, Token } from '@authweb/service';
 
-const Login = ():React$Node => {
+type Props = {|
+  onLogin?: () => void
+|};
+
+const Login = ({ onLogin = () => {} }: Props):React$Node => {
   const navigate = useNavigate();
   const state = useMemo(crypto.generateRandomString, []);
   const { params } = auth.useOAuth2(Client, state);
   setCookie('state', state);
+  
+  // TODO: I think things can get weird, with multiple state cookies conflicting
 
   return (
     <Grid 
@@ -40,9 +46,7 @@ const Login = ():React$Node => {
       <Grid item>
         <OAuthPopup
           url={`${Server.authorizeUri}?${params}`}
-          // onCode={code => onCode(code).then(() => {
-          //   navigate('/', { replace: true });
-          // })}
+          onCode={onLogin}
           onClose={() => {}}
         >
           <Button 

@@ -7,7 +7,9 @@
 
 import React from 'react';
 import {
-  Grid
+  Stack,
+  Container,
+  Box
 } from '@mui/material';
 import Navigation from '@view/Navigation';
 import Login from '@view/Login';
@@ -18,22 +20,19 @@ type Props = {|
 |};
 
 const Frame = ({ children }: Props):React$Node => {
-  const user = useUser();
+  const [ user, refreshUser ] = useUser();
   if (!user) {
-    return <Login />;
+    return <Login onLogin={refreshUser} />;
   }
   return (
-    <Grid 
-      container
+    <Stack 
       direction='column'
-      wrap='nowrap'
       sx={{
         height: 1
       }}
     >
-      <Grid 
-        item
-        component='main'
+      <Container 
+        maxWidth='sm'
         sx={{
           overflow: 'auto',
           position: 'relative',
@@ -41,11 +40,11 @@ const Frame = ({ children }: Props):React$Node => {
         }}
       >
         {children}
-      </Grid>
-      <Grid component='nav' item>
+      </Container>
+      <Box component='nav'>
         <Navigation />
-      </Grid>
-    </Grid>
+      </Box>
+    </Stack>
   )
 };
 

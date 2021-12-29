@@ -15,13 +15,19 @@ import { api } from '@authweb/service';
 
 import type { User } from '@authweb/service';
 
-const UserContext = createContext<?User>();
+const UserContext = createContext<[?User, () => void]>([null, () => {}]);
 type Props = {|
   children: React$Node
 |};
 export const UserProvider = ({ children }: Props):React$Node => {
+
+  // TODO: Refactor to use api.useGet
+
   const [ user, setUser ] = useState(null);
+  const [ refreshCode, setRefreshCode ] = useState(0);
   const Api = api.useApi();
+
+  const refresh = () => setRefreshCode(code => code + 1);
 
   useEffect(() => {
     const abort = new AbortController();
@@ -34,13 +40,13 @@ export const UserProvider = ({ children }: Props):React$Node => {
       }
     });
     return () => abort.abort();
-  }, [ Api.doGet ]);
+  }, [ refreshCode, Api.doGet ]);
 
   return (
-    <UserContext.Provider value={user}>
+    <UserContext.Provider value={[ user, refresh ]}>
       {children}
     </UserContext.Provider>
   );
 };
 
-export const useUser = ():?User => useContext(UserContext);
+export const useUser = ():[?User, () => void] => useContext(UserContext);

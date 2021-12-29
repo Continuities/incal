@@ -8,6 +8,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { getUser, getToken } from './service/auth.js';
+import { getPlaces, getPlace } from './service/place.js';
 import MemoryStore from 'simple-memory-storage';
 import { v4 as uuid } from 'uuid';
 
@@ -65,6 +66,8 @@ app.get('/login', async (req, res) => {
   res.sendStatus(200);
 });
 
+// TODO: Protect routes with authorisation
+
 app.get('/user', async (req, res) => {
   try {
     const user = await getUser(req.user);
@@ -73,6 +76,32 @@ app.get('/user', async (req, res) => {
   catch (e) {
     console.log(e);
     res.sendStatus(401);
+  }
+});
+
+app.get('/place', async (req, res) => {
+  try {
+    const places = await getPlaces();
+    res.send(JSON.stringify(places));
+  }
+  catch (e) {
+    console.log(e);
+    res.sendStatus(500)
+  }
+});
+
+app.get('/place/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const place = await getPlace(id);
+    if (!place) {
+      return res.sendStatus(404);
+    }
+    res.send(JSON.stringify(place));
+  }
+  catch (e) {
+    console.log(e);
+    res.sendStatus(500)
   }
 });
 

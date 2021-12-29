@@ -15,14 +15,12 @@ import {
   BottomNavigationAction
 } from '@mui/material';
 import {
-  AccountCircle,
-  Contacts,
+  HolidayVillage,
   Settings
 } from '@mui/icons-material';
 
 const tabs = {
-  '/': [ AccountCircle, 'Profile' ],
-  '/users': [ Contacts, 'Directory' ],
+  '/': [ HolidayVillage, 'Places' ],
   '/settings': [ Settings, 'Settings' ],
 };
 

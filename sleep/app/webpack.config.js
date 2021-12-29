@@ -6,6 +6,8 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 
 require('dotenv').config({ path: './.env' }); 
 
+const uri = process.env.BASE_URI;
+
 module.exports = {
   output: {
     path: path.join(__dirname, '/dist'),
@@ -17,13 +19,13 @@ module.exports = {
     client: {
       webSocketURL: {
         hostname: '0.0.0.0',
-        pathname: '/sleep/ws',
+        pathname: `${uri}ws`,
         port: 3000
       },
     },
     historyApiFallback: {
       disableDotRule: true,
-      index: '/sleep/'
+      index: uri
     }
   },
   module: {
@@ -57,14 +59,15 @@ module.exports = {
       'REACT_APP_AUTH_URI',
       'REACT_APP_TOKEN_URI',
       'REACT_APP_APP_URI',
-      'REACT_APP_API_URI'
+      'REACT_APP_API_URI',
+      'BASE_URI'
     ]),
     new HtmlWebpackPlugin({
       filename: path.join(__dirname, 'dist', 'index.html'),
       template: path.join(__dirname, 'static', 'index.html'),
       title: 'sleep',
       metadata: {
-        baseUrl: '/sleep/'
+        baseUrl: uri
       }
     }),
     new FaviconsWebpackPlugin({
