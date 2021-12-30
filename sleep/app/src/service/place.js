@@ -7,6 +7,9 @@
 
 import React, { useState } from 'react';
 import { api } from '@authweb/service';
+import {
+  Hotel, Fireplace
+} from '@mui/icons-material';
 import type { ApiResponse } from '@authweb/service';
 
 // TODO: Share type definitions with api
@@ -18,12 +21,19 @@ export type Place = {|
   amenities: Array<Amenity>
 |};
 
+export type AmenityType = 
+  'sleeps' | 
+  'heated';
+
+export type AmenityDefinition = {|
+  label: string,
+  Icon: React$ComponentType<any>,
+  value?:string
+|};
+
 export type Amenity = {|
-  type: 'sleeps',
-  value: number
-|} | {|
-  type: 'heated',
-  value: boolean
+  type: AmenityType,
+  value?: any
 |};
 
 export const usePlaces = ():[ ApiResponse<Array<Place>>, () => void] => {
@@ -43,3 +53,15 @@ export const usePlace = (id:string):[ ApiResponse<Place>, () => void ] => {
     () => setRefreshCode(c => c + 1)
   ];
 };
+
+export const Amenities:Map<AmenityType, AmenityDefinition> = new Map([
+  [ 'sleeps', { 
+    label: 'sleeps', 
+    Icon: Hotel,
+    value: 'number'
+  } ],
+  [ 'heated', { 
+    label: 'heated', 
+    Icon: Fireplace
+  }]
+]);

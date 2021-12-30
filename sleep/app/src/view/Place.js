@@ -9,7 +9,7 @@ import React from 'react';
 import { api } from '@authweb/service';
 import { usePlace } from '@service/place';
 import { useParams } from 'react-router-dom';
-import AmenityTag from '@view/AmenityTag';
+import { AmenityTag } from '@view/Amenity';
 import {
   Box,
   Typography,

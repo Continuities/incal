@@ -106,11 +106,8 @@ app.get('/place/:id', async (req, res) => {
 });
 
 app.post('/place', async (req, res) => {
-  const { name } = req.body;
-  console.log(req.body);
-  console.log('==== NAME:', name);
   try {
-    const place = await createPlace(name);
+    const place = await createPlace(req.body);
     res.send(JSON.stringify(place));
   }
   catch (e) {

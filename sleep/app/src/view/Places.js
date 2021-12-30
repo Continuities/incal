@@ -9,7 +9,7 @@ import React from 'react';
 import { api } from '@authweb/service';
 import { usePlaces } from '@service/place';
 import { Link } from 'react-router-dom';
-import AmenityTag from '@view/AmenityTag';
+import { AmenityTag } from '@view/Amenity';
 import CreatePlaceButton from '@view/CreatePlaceButton';
 import {
   Box,
@@ -43,11 +43,13 @@ const Places = ():React$Node => {
           ))}
         </api.ApiResolver>
       </Stack>
-      <CreatePlaceButton sx={{
-        position: 'fixed',
-        right: '10%',
-        bottom: '10%'
-      }}/>
+      <CreatePlaceButton 
+        onCreate={refresh}
+        sx={{
+          position: 'fixed',
+          right: '10%',
+          bottom: '10%'
+        }}/>
     </>
   );
 };

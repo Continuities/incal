@@ -16,12 +16,11 @@ export type Place = {|
   amenities: Array<Amenity>
 |};
 
+export type AmenityType = 'sleeps' | 'heated';
+
 export type Amenity = {|
-  type: 'sleeps',
-  value: number
-|} | {|
-  type: 'heated',
-  value: boolean
+  type: AmenityType,
+  value?: any
 |};
 
 type Tagged<T> = {|
@@ -50,17 +49,17 @@ export const getPlace = async (id:PlaceId):Promise<?Tagged<Place>> => {
   return !place ? null : withTags(place);
 };
 
-export const createPlace = async (name: string):Promise<Tagged<Place>> => {
+export const createPlace = async (input: any):Promise<Tagged<Place>> => {
   
-  if (!name) {
+  if (!input.name) {
     throw 'Invalid name';
   }
 
   const col = await collection(COLLECTION);
   const place = {
     id: uuid(),
-    name,
-    amenities: []
+    name: input.name,
+    amenities: input.amenities || []
   };
   col.insert(place);
 
