@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import Navigation from '@view/Navigation';
 import Login from '@view/Login';
+import DateBar from '@view/DateBar';
 import { useUser } from '@service/user';
 
 type Props = {|
@@ -31,6 +32,7 @@ const Frame = ({ children }: Props):React$Node => {
         height: 1
       }}
     >
+      <DateBar />
       <Container 
         maxWidth='sm'
         sx={{
