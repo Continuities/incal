@@ -4,6 +4,8 @@
  * @since December 29, 2021
  * @flow
  **/
+import { v4 as uuid } from 'uuid';
+import collection, { sanitise } from './db.js';
 
 // TODO: Share type definitions with app
 export type PlaceId = string;
@@ -22,33 +24,46 @@ export type Amenity = {|
   value: boolean
 |};
 
-const FAKE_PLACES = {
-  'PLACE1': {
-    id: 'PLACE1',
-    name: 'A Hole In The Ground',
-    amenities: [{ type: 'sleeps', value: 2 }]
-  },
-  'PLACE2': {
-    id: 'PLACE2',
-    name: 'Literally A Tree',
-    amenities: [{ type: 'sleeps', value: 4 }]
-  },
-  'PLACE3': {
-    id: 'PLACE3',
-    name: 'The Space Under The Stove',
-    amenities: [
-      { type: 'sleeps', value: 1 },
-      { type: 'heated', value: true }
-    ]
+type Tagged<T> = {|
+  ...T,
+  tags: Array<string>
+|};
+
+const COLLECTION = 'place';
+
+const withTags = (place:Place):Tagged<Place> => ({
+  ...place,
+  tags: [] // TODO
+});
+
+export const getPlaces = async ():Promise<Array<Tagged<Place>>> => {
+  const col = await collection(COLLECTION);
+  const places = await col.find();
+  return (await places.toArray())
+    .map(sanitise)
+    .map(withTags);
+};
+
+export const getPlace = async (id:PlaceId):Promise<?Tagged<Place>> => {
+  const col = await collection(COLLECTION);
+  const place = await col.findOne({ id });
+  return !place ? null : withTags(place);
+};
+
+export const createPlace = async (name: string):Promise<Tagged<Place>> => {
+  
+  if (!name) {
+    throw 'Invalid name';
   }
-};
 
-export const getPlaces = async ():Promise<Array<Place>> => {
-  // $FlowFixMe TODO
-  return [...Object.values(FAKE_PLACES)];
-};
+  const col = await collection(COLLECTION);
+  const place = {
+    id: uuid(),
+    name,
+    amenities: []
+  };
+  col.insert(place);
 
-export const getPlace = async (id:PlaceId):Promise<?Place> => {
-  // TODO
-  return FAKE_PLACES[id];
+  return withTags(place)
+
 };

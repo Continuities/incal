@@ -10,6 +10,7 @@ import { api } from '@authweb/service';
 import { usePlaces } from '@service/place';
 import { Link } from 'react-router-dom';
 import AmenityTag from '@view/AmenityTag';
+import CreatePlaceButton from '@view/CreatePlaceButton';
 import {
   Box,
   Typography,
@@ -18,11 +19,13 @@ import {
   CardMedia,
   CardActionArea,
   Stack,
-  Grid
+  Grid,
+  Fab
 } from '@mui/material';
 
 import {
-  Home
+  Home,
+  Add
 } from '@mui/icons-material';
 
 import type { Place } from '@service/place';
@@ -32,13 +35,20 @@ const Places = ():React$Node => {
   const [ response, refresh ] = usePlaces();
 
   return (
-    <Stack direction='column' my={5} spacing={5}>
-      <api.ApiResolver data={response}>
-        {(places:Array<Place>) => places.map(place => (
-          <PlaceCard key={place.id} place={place} />
-        ))}
-      </api.ApiResolver>
-    </Stack>
+    <>
+      <Stack direction='column' my={5} spacing={5}>
+        <api.ApiResolver data={response}>
+          {(places:Array<Place>) => places.map(place => (
+            <PlaceCard key={place.id} place={place} />
+          ))}
+        </api.ApiResolver>
+      </Stack>
+      <CreatePlaceButton sx={{
+        position: 'fixed',
+        right: '10%',
+        bottom: '10%'
+      }}/>
+    </>
   );
 };
 

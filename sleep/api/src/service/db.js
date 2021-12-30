@@ -1,6 +1,6 @@
 /**
  * Interface layer for MongoDB
- * // TODO: Move this to shared/service
+ * TODO: Move this to shared/service
  * @author mtownsend
  * @since October 07, 2021
  * @flow

@@ -8,7 +8,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { getUser, getToken } from './service/auth.js';
-import { getPlaces, getPlace } from './service/place.js';
+import { getPlaces, getPlace, createPlace } from './service/place.js';
 import MemoryStore from 'simple-memory-storage';
 import { v4 as uuid } from 'uuid';
 
@@ -102,6 +102,20 @@ app.get('/place/:id', async (req, res) => {
   catch (e) {
     console.log(e);
     res.sendStatus(500)
+  }
+});
+
+app.post('/place', async (req, res) => {
+  const { name } = req.body;
+  console.log(req.body);
+  console.log('==== NAME:', name);
+  try {
+    const place = await createPlace(name);
+    res.send(JSON.stringify(place));
+  }
+  catch (e) {
+    console.log(e);
+    return res.status(400).send(e);
   }
 });
 

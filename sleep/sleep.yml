@@ -33,6 +33,7 @@ services:
       - TOKEN_URI=http://api:8080/oauth/token
       - USER_URI=http://api:8080/user
       - SESSION_TIME=86400
+      - SPONSORS_TO_CREATE=3
     links:
       - db
     depends_on:

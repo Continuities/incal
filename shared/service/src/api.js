@@ -90,6 +90,7 @@ type FetchParams = {|
 type ApiType = {|
   doFetch: <T> (FetchParams) => Promise<ApiResponse<T>>,
   doGet: ApiFunction,
+  doPost: <T> (string, ?Token, ?any, ?AbortSignal) => Promise<ApiResponse<T>>,
   doPut: <T> (string, ?Token, ?any, ?AbortSignal) => Promise<ApiResponse<T>>,
   doDelete: ApiFunction
 |};
@@ -100,6 +101,10 @@ const Api = (apiUri:string):ApiType => ({
     const headers:any = {
       Accept: 'application/json'
     };
+
+    if (method === 'POST') {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (token) {
       headers.Authorization = `${token.token_type} ${token.access_token}`;
@@ -134,6 +139,9 @@ const Api = (apiUri:string):ApiType => ({
 
   doGet: async function<T> (query:string, token?:?Token, signal?:?AbortSignal): Promise<ApiResponse<T>> { 
     return this.doFetch({ query, method: 'GET', token, signal })
+  },
+  doPost: async function<T> (query:string, token?:?Token, body?:any, signal?:?AbortSignal): Promise<ApiResponse<T>> {
+    return this.doFetch({ query, method: 'POST', token, body, signal });
   },
   doPut: async function<T> (query:string, token?:?Token, body?:any, signal?:?AbortSignal): Promise<ApiResponse<T>> {
     return this.doFetch({ query, method: 'PUT', token, body, signal });
