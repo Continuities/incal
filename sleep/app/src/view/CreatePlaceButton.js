@@ -45,7 +45,8 @@ const CreatePlaceButton = ({ sx, onCreate }: Props):React$Node => {
   const [ place, setPlace ] = useState<Place>({
     id: '',
     name: '',
-    amenities: []
+    amenities: [],
+    bookings: []
   });
   const [ error, setError ] = useState(null);
   const Api = api.useApi();

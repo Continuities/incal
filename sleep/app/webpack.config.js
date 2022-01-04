@@ -24,8 +24,7 @@ module.exports = {
       },
     },
     historyApiFallback: {
-      disableDotRule: true,
-      index: uri
+      disableDotRule: true
     }
   },
   module: {

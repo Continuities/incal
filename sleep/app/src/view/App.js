@@ -26,6 +26,7 @@ import Places from '@view/Places';
 import Place from '@view/Place';
 import Settings from '@view/Settings';
 import { DateProvider } from '@service/date';
+import { SnackProvider } from "@service/snackbar";
 
 const API = process.env.REACT_APP_API_URI || 'http://localhost/sleep/api';
 
@@ -34,21 +35,23 @@ const App = ():React$Node => {
     <BrowserRouter basename={process.env.BASE_URI}>
       <CssBaseline />
       <ThemeProvider theme={theme}>
-        <auth.TokenProvider client={Client} server={Server}>
-          <api.ApiProvider uri={API}>
-            <UserProvider>
-              <DateProvider>
-                <Frame>
-                  <Routes>
-                    <Route path='/settings' element={<Settings />} />
-                    <Route path='/place/:id' element={<Place /> } />
-                    <Route exact path='/' element={<Places />} />
-                  </Routes>
-                </Frame>
-              </DateProvider>
-            </UserProvider>
-          </api.ApiProvider>
-        </auth.TokenProvider>
+        <SnackProvider>
+          <auth.TokenProvider client={Client} server={Server}>
+            <api.ApiProvider uri={API}>
+              <UserProvider>
+                <DateProvider>
+                  <Frame>
+                    <Routes>
+                      <Route path='/settings' element={<Settings />} />
+                      <Route path='/place/:id' element={<Place /> } />
+                      <Route exact path='/' element={<Places />} />
+                    </Routes>
+                  </Frame>
+                </DateProvider>
+              </UserProvider>
+            </api.ApiProvider>
+          </auth.TokenProvider>
+        </SnackProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

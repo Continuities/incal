@@ -9,12 +9,15 @@ import React from 'react';
 import {
   Stack,
   Container,
-  Box
+  Box,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import Navigation from '@view/Navigation';
 import Login from '@view/Login';
 import DateBar from '@view/DateBar';
 import { useUser } from '@service/user';
+import { useSnack } from '@service/snackbar';
 
 type Props = {|
   children: React$Node
@@ -22,6 +25,10 @@ type Props = {|
 
 const Frame = ({ children }: Props):React$Node => {
   const [ user, refreshUser ] = useUser();
+  const [ snack, setSnack ] = useSnack();
+
+  const closeSnack = () => setSnack(null);
+
   if (!user) {
     return <Login onLogin={refreshUser} />;
   }
@@ -43,6 +50,18 @@ const Frame = ({ children }: Props):React$Node => {
       >
         {children}
       </Container>
+      <Snackbar 
+        open={Boolean(snack)} 
+        onClose={closeSnack}
+        autoHideDuration={6000}
+        sx={{ bottom: { xs: 90 } }}
+      >
+        {snack && (
+          <Alert severity={snack.type} onClose={closeSnack}>
+            {snack.text}
+          </Alert>
+        )}
+      </Snackbar>
       <Box component='nav'>
         <Navigation />
       </Box>

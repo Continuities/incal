@@ -151,6 +151,19 @@ const Api = (apiUri:string):ApiType => ({
   }
 });
 
+export const mapResponse  = <T, R> (response:ApiResponse<T>, mapper:T => R):ApiResponse<R> => {
+  switch (response.status) {
+    case 'success':
+      return { status: 'success', result: mapper(response.result) };
+    case 'error':
+      return { status: 'error', code: response.code, description: response.description };
+    case 'pending':
+      return { status: 'pending' };
+    case 'success_empty':
+      return { status: 'success_empty' }; 
+  }
+};
+
 type ResolverProps<T> = {|
   children: T => React$Node,
   data: any,

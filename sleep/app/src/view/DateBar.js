@@ -10,12 +10,14 @@ import { useDates } from '@service/date';
 import {
   AppBar,
   Stack,
-  TextField
+  TextField,
+  Container
 } from '@mui/material';
 import {
   DatePicker,
   LocalizationProvider
 } from '@mui/lab';
+import { add } from 'date-fns';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 
 const PickerInput = props => (
@@ -33,26 +35,33 @@ const DateBar = ():React$Node => {
       <AppBar position='static' color='transparent' sx={{
         zIndex: 'appBar',
         height: 60,
-        px: 2
+        px: 2,
+        justifyContent: 'center'
       }}>
-        <Stack 
-          direction='row' 
-          alignItems='center' 
-          spacing={4}
-          height={1}>
-          <DatePicker
-            label="Arrival"
-            value={dates.start}
-            onChange={val => dispatch({ type: 'set-start', data: val })}
-            renderInput={PickerInput}
-          />
-          <DatePicker
-            label="Departure"
-            value={dates.end}
-            onChange={val => dispatch({ type: 'set-end', data: val })}
-            renderInput={PickerInput}
-          />
-        </Stack>
+        <Container maxWidth='sm'>
+          <Stack 
+            direction='row'
+            spacing={4}
+            height={1}
+          >
+            <DatePicker
+              label="Arrival"
+              value={dates.start}
+              minDate={new Date()}
+              onChange={val => dispatch({ type: 'set-start', data: val })}
+              disableCloseOnSelect={false}
+              renderInput={PickerInput}
+            />
+            <DatePicker
+              label="Departure"
+              value={dates.end}
+              minDate={add(new Date(), { days: 1 })}
+              onChange={val => dispatch({ type: 'set-end', data: val })}
+              disableCloseOnSelect={false}
+              renderInput={PickerInput}
+            />
+          </Stack>
+        </Container>
       </AppBar>
     </LocalizationProvider>
   );

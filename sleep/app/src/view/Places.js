@@ -22,11 +22,12 @@ import {
   Grid,
   Fab
 } from '@mui/material';
-
 import {
   Home,
   Add
 } from '@mui/icons-material';
+import { isAvailable } from '@service/place';
+import { useDates } from '@service/date';
 
 import type { Place } from '@service/place';
 
@@ -54,42 +55,51 @@ const Places = ():React$Node => {
   );
 };
 
-const PlaceCard = ({ place }: {| place: Place |}) => (
-  <Card>
-    <CardActionArea component={Link} to={`/place/${place.id}`}>
-      <CardMedia 
-        component={ place.photo ? 'img' : 'div'}
-        sx={{
-          height: 140,
-          bgcolor: 'grey.300',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-        image={place.photo}
-        alt={place.name}
-      >
-        {!place.photo && (
-          <Home sx={{
-            color: 'background.default',
-            fontSize: '6rem'
-          }} />
-        )}
-      </CardMedia>
-      <CardContent>
-        <Typography variant='h5' mb={2}>
-          {place.name}
-        </Typography>
-        <Grid container spacing={2}>
-          {place.amenities.map(amenity => (
-            <Grid key={amenity.type} item xs={6}>
-              <AmenityTag amenity={amenity} />
-            </Grid>
-          ))}
-        </Grid>
-      </CardContent>
-    </CardActionArea>
-  </Card>
-);
+const PlaceCard = ({ place }: {| place: Place |}) => {
+  const [ dates ] = useDates();
+  const available = isAvailable(place, dates);
+  return (
+    <Card>
+      <CardActionArea component={Link} to={`/place/${place.id}`}>
+        <CardMedia 
+          component={ place.photo ? 'img' : 'div'}
+          sx={{
+            height: 140,
+            bgcolor: 'grey.300',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          image={place.photo}
+          alt={place.name}
+        >
+          {!place.photo && (
+            <Home sx={{
+              color: 'background.default',
+              fontSize: '6rem'
+            }} />
+          )}
+        </CardMedia>
+        <CardContent>
+          <Stack direction='row' spacing={1} mb={2} alignItems='center'>
+            <Typography variant='h5'>
+              {place.name}
+            </Typography>
+            <Typography color={available ? 'success.main' : 'error.main'}>
+              {available ? 'Available' : 'Unavailable' }
+            </Typography>
+          </Stack>
+          <Grid container spacing={2}>
+            {place.amenities.map(amenity => (
+              <Grid key={amenity.type} item xs={6}>
+                <AmenityTag amenity={amenity} />
+              </Grid>
+            ))}
+          </Grid>
+        </CardContent>
+      </CardActionArea>
+    </Card>
+  );
+};
 
 export default Places;

@@ -8,7 +8,12 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { getUser, getToken } from './service/auth.js';
-import { getPlaces, getPlace, createPlace } from './service/place.js';
+import { 
+  getPlaces, 
+  getPlace, 
+  createPlace, 
+  reservePlace 
+} from './service/place.js';
 import MemoryStore from 'simple-memory-storage';
 import { v4 as uuid } from 'uuid';
 
@@ -111,6 +116,30 @@ app.post('/place', async (req, res) => {
     res.send(JSON.stringify(place));
   }
   catch (e) {
+    console.log(e);
+    return res.status(400).send(e);
+  }
+});
+
+app.post('/place/:placeId/booking', async (req, res) => {
+  const {
+    placeId
+  } = req.params;
+  if (!placeId) {
+    return res.status(400).send('Missing placeId');
+  }
+
+  const user = await getUser(req.user);
+
+  if (!user || user.email !== req.body.guestId) {
+    return res.sendStatus(401);
+  }
+
+  try {
+    const booking = await reservePlace(placeId, req.body);
+    res.send(JSON.stringify(booking));
+  }
+  catch(e) {
     console.log(e);
     return res.status(400).send(e);
   }
