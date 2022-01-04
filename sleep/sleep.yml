@@ -1,6 +1,9 @@
 
 version: '3'
 
+volumes:
+  public-volume:
+
 services:
 
   nginx:
@@ -34,6 +37,9 @@ services:
       - USER_URI=http://api:8080/user
       - SESSION_TIME=86400
       - SPONSORS_TO_CREATE=3
+      - PUBLIC_PATH=/data/public
+    volumes:
+      - public-volume:/data/public
     links:
       - db
     depends_on:

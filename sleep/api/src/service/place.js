@@ -7,10 +7,13 @@
 import { v4 as uuid } from 'uuid';
 import collection, { sanitise } from './db.js';
 
+import type { Tagged } from '../util.js';
+
 // TODO: Share type definitions with app
 export type PlaceId = string;
 export type Place = {|
   id: PlaceId,
+  owner: string,
   name: string,
   photo?: string,
   amenities: Array<Amenity>,
@@ -24,16 +27,14 @@ export type Amenity = {|
   value?: any
 |};
 
+export type BookingId = string;
+
 export type Booking = {|
+  id: BookingId,
   start:Date,
   end:Date,
   status: 'pending' | 'approved' | 'denied',
   guestId: string
-|};
-
-type Tagged<T> = {|
-  ...T,
-  tags: Array<string>
 |};
 
 const COLLECTION = 'place';
@@ -51,6 +52,14 @@ export const getPlaces = async ():Promise<Array<Tagged<Place>>> => {
     .map(withTags);
 };
 
+export const getBookings = async (userEmail:string): Promise<Array<Tagged<Place>>> => {
+  const col = await collection(COLLECTION);
+  const places = await col.find({ "bookings.guestId": userEmail });
+  return (await places.toArray())
+    .map(sanitise)
+    .map(withTags);
+};
+
 export const getPlace = async (id:PlaceId):Promise<?Tagged<Place>> => {
   const col = await collection(COLLECTION);
   const place = await col.findOne({ id });
@@ -60,11 +69,17 @@ export const getPlace = async (id:PlaceId):Promise<?Tagged<Place>> => {
 export const reservePlace = async (placeId:PlaceId, booking:Booking):Promise<Booking> => {
   const col = await collection(COLLECTION);
   // TODO: Validate the reservation
+  booking.id = uuid();
   if (!requiresApproval(placeId, booking)) {
     booking.status = 'approved';
   }
   await col.updateOne({ id: placeId }, { $push: { bookings: booking }});
   return booking;
+};
+
+export const cancelReservation = async(placeId:PlaceId, bookingId:BookingId):Promise<void> => {
+  const col = await collection(COLLECTION);
+  await col.updateOne({ id: placeId }, { $pull: { bookings: { id: bookingId }}});
 };
 
 export const createPlace = async (input: any):Promise<Tagged<Place>> => {
@@ -76,6 +91,8 @@ export const createPlace = async (input: any):Promise<Tagged<Place>> => {
   const col = await collection(COLLECTION);
   const place = {
     id: uuid(),
+    owner: input.owner,
+    photo: input.photo,
     name: input.name,
     amenities: input.amenities || [],
     bookings: []

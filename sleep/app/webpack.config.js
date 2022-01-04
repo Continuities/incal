@@ -19,8 +19,7 @@ module.exports = {
     client: {
       webSocketURL: {
         hostname: '0.0.0.0',
-        pathname: `${uri}ws`,
-        port: 3000
+        port: 3001
       },
     },
     historyApiFallback: {

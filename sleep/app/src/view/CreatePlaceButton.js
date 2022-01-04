@@ -5,9 +5,9 @@
  * @flow
  **/
 
-import React, { useState } from 'react';
+import React, { useState, createRef } from 'react';
 import { api } from '@authweb/service';
-import PlacePhoto from '@view/PlacePhoto';
+import { PlaceMedia } from '@view/Places';
 import {
   Fab,
   Dialog,
@@ -26,6 +26,7 @@ import {
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { Amenities } from '@service/place';
+import { useSnack } from '@service/snackbar';
 import { 
   AmenityIcon, 
   AmenityLabel,
@@ -88,7 +89,13 @@ const CreatePlaceButton = ({ sx, onCreate }: Props):React$Node => {
         <DialogTitle>Add Place</DialogTitle>
         <DialogContent>
           <Stack direction='column' spacing={2}>
-            <PlacePhoto place={place} />
+            <UploadPhotoButton 
+              place={place}
+              onBegin={() => console.log('begin')}
+              onComplete={(filename) => set('photo', filename)}
+            >
+              <PlaceMedia place={place} />
+            </UploadPhotoButton>
             <TextField 
               required 
               autoFocus
@@ -109,6 +116,79 @@ const CreatePlaceButton = ({ sx, onCreate }: Props):React$Node => {
       </Dialog>
     </>
   )
+};
+
+const UploadPhotoButton = ({ onBegin, onComplete, children, place }) => {
+  const Api = api.useApi();
+  const ref = createRef();
+  const [ , setSnack ] = useSnack();
+  return (
+    <Box 
+      onClick={() => ref.current?.click()}
+      sx={{
+        position: 'relative',
+        cursor: 'pointer'
+      }}
+    >
+      {children}
+      <Stack 
+        alignItems='center' 
+        justifyContent='center'
+        sx={{
+          position: 'absolute',
+          top: 0,
+          width: 1,
+          height: 1,
+          transition: 'background-color 400ms',
+          bgcolor: 'rgba(0, 0, 0, 0.2)',
+          '&:hover': {
+            bgcolor: 'rgba(0, 0, 0, 0.3)'
+          }
+        }}
+      >
+        <Typography sx={{
+          color: 'white',
+          textShadow: '0 0 5px black',
+          fontSize: 'h4.fontSize'
+        }}>
+          Upload photo
+        </Typography>
+      </Stack>
+      <input 
+        type='file'
+        id='photo-input'
+        name='avatar'
+        accept='image/*'
+        ref={ref}
+        style={{
+          position: 'absolute',
+          height: '1px',
+          width: '1px',
+          overflow: 'hidden',
+          clip: 'rect(1px, 1px, 1px, 1px)'
+        }}
+        onChange={e => {
+          const file = e.target?.files?.item(0);
+          if (!file) {
+            return;
+          }
+          onBegin();
+          const formData = new FormData();
+          formData.append('photo', file);
+          Api
+            .doPost(`/photo`, null, formData)
+            .then(r => {
+              if (r.status === 'success') {
+                onComplete(r.result.filename)
+              }
+            })
+            .catch((e) => {
+              setSnack({ type: 'error', text: e });
+              onComplete(null);
+            });
+        }}/>
+    </Box>
+  );
 };
 
 const AmenitiesList = ({ amenities, onChange }) => {

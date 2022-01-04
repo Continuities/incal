@@ -102,7 +102,7 @@ const Api = (apiUri:string):ApiType => ({
       Accept: 'application/json'
     };
 
-    if (method === 'POST') {
+    if (method === 'POST' &&  !(body instanceof FormData)) {
       headers['Content-Type'] = 'application/json';
     }
 

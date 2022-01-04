@@ -24,6 +24,7 @@ import { UserProvider } from '@service/user';
 import Frame from '@view/Frame';
 import Places from '@view/Places';
 import Place from '@view/Place';
+import Bookings from '@view/Bookings';
 import Settings from '@view/Settings';
 import { DateProvider } from '@service/date';
 import { SnackProvider } from "@service/snackbar";
@@ -44,6 +45,7 @@ const App = ():React$Node => {
                     <Routes>
                       <Route path='/settings' element={<Settings />} />
                       <Route path='/place/:id' element={<Place /> } />
+                      <Route path='/bookings' element={<Bookings />} />
                       <Route exact path='/' element={<Places />} />
                     </Routes>
                   </Frame>

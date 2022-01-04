@@ -16,11 +16,13 @@ import {
 } from '@mui/material';
 import {
   HolidayVillage,
-  Settings
+  Settings,
+  DateRange
 } from '@mui/icons-material';
 
 const tabs = {
   '/': [ HolidayVillage, 'Places' ],
+  '/bookings': [ DateRange, 'Reservations' ],
   '/settings': [ Settings, 'Settings' ],
 };
 

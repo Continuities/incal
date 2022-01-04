@@ -12,7 +12,7 @@ services:
       - ./sleep/app:/opt/app
       - /opt/app/node_modules # anonymous volume for node_modules only
     ports:
-      - 3000:3000 # For docker to know where to redirect HMR queries
+      - 3001:3000 # For docker to know where to redirect HMR queries
 
   sleep_api:
     build:

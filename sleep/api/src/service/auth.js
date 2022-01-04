@@ -8,10 +8,30 @@
 import fetch from 'node-fetch';
 import { Client, Server } from '../config.js';
 import { URLSearchParams } from "url";
+import { evaluate } from './rule.js';
+
+import type { RulePredicate } from './rule.js';
+import type { Tagged } from '../util.js';
 
 const USER_URI = String(process.env.USER_URI);
 
-export const getUser = async (token:?Token = null):any => {
+const withTags = (user:any):Tagged<any> => {
+  if (!user) {
+    return null;
+  }
+  const tags:Array<string> = user.tags || [];
+
+  if (user.isAnchor || user.sponsors.length >= process.env.SPONSORS_TO_CREATE) {
+    tags.push('can-create');
+  }
+
+  return {
+    ...user,
+    tags
+  };
+};
+
+export const getUser = async (token:?Token = null):Promise<any> => {
   const headers:any = {
     Accept: 'application/json'
   };
@@ -28,7 +48,7 @@ export const getUser = async (token:?Token = null):any => {
     return null;
   }
 
-  return r.json();
+  return withTags(await r.json());
 };
 
 export type Token = {|
@@ -67,4 +87,14 @@ export const getToken = async (code:string):Promise<?Token> => {
     console.error(e);
     return null;
   }
+};
+
+export const secured = (rules?:Array<RulePredicate>):any => (req, res, next) => {
+  if (!req.user) {
+    return res.sendStatus(401);
+  }
+  if (rules && !evaluate(rules, req)) {
+    return res.sendStatus(401);
+  }
+  next();
 };

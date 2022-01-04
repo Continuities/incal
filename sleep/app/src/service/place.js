@@ -28,7 +28,10 @@ export type Place = {|
   bookings: Array<Booking>
 |};
 
+export type BookingId = string;
+
 export type Booking = {|
+  id: BookingId,
   start: Date,
   end: Date,
   status: 'pending' | 'approved' | 'denied',
@@ -60,9 +63,14 @@ const parse = (json:any):Place => ({
   })) : []
 });
 
-export const usePlaces = ():[ ApiResponse<Array<Place>>, () => void] => {
+type PlacesProps = {|
+  guest?: string
+|};
+export const usePlaces = (props?: PlacesProps):[ ApiResponse<Array<Place>>, () => void] => {
   const [ refreshCode, setRefreshCode ] = useState(0);
-  const places = api.useGet('/place', refreshCode);
+  const { guest } = props || {};
+  const params = guest ? `?guest=${guest}` : '';
+  const places = api.useGet(`/place${params}`, refreshCode);
   return [
     api.mapResponse(places, list => list.map(parse)),
     () => setRefreshCode(c => c + 1)
@@ -91,6 +99,7 @@ export const useReserve = (placeId: PlaceId, onComplete?:() => void):() => Promi
     }
 
     const booking:Booking = {
+      id: 'nyan',
       start: dates.start || new Date(),
       end: dates.end || new Date(),
       guestId: user.email,
@@ -111,7 +120,24 @@ export const useReserve = (placeId: PlaceId, onComplete?:() => void):() => Promi
 
     onComplete && onComplete();
   };
-}
+};
+
+export const useCancel = ():(placeId: PlaceId, bookingId: BookingId) => Promise<void> => {
+  const Api = api.useApi();
+  const [ , setSnack ] = useSnack();
+  return async (placeId, bookingId) => {
+    const response = await Api.doDelete(`/place/${placeId}/booking/${bookingId}`);
+    if (response.status === 'error') {
+      setSnack({ type: 'error', text: response.description });
+    }
+    else if (response.status === 'success_empty') {
+      setSnack({
+        type: 'info',
+        text: 'Reservation cancelled'
+      });
+    }
+  };
+};
 
 export const Amenities:Map<AmenityType, AmenityDefinition> = new Map([
   [ 'sleeps', { 

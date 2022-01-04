@@ -10,6 +10,7 @@ import { api } from '@authweb/service';
 import { usePlace } from '@service/place';
 import { useParams } from 'react-router-dom';
 import { AmenityTag } from '@view/Amenity';
+import { PlaceMedia } from '@view/Places';
 import {
   Box,
   Typography,
@@ -41,25 +42,7 @@ const Place = ():React$Node => {
         const available = isAvailable(place, dates);
         return (
           <Stack direction='column' spacing={4}>
-            <Box 
-              component={ place.photo ? 'img' : 'div'}
-              sx={{
-                height: 140,
-                bgcolor: 'grey.300',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              image={place.photo}
-              alt={place.name}
-            >
-              {!place.photo && (
-                <Home sx={{
-                  color: 'background.default',
-                  fontSize: '6rem'
-                }} />
-              )}
-            </Box>
+            <PlaceMedia place={place} />
             <Stack direction='row' spacing={1} alignItems='center'>
               <Typography variant='h1'>
                 {place.name}
