@@ -8,9 +8,9 @@
   "scripts": {
     "start": "yarn build && docker-compose up -d",
     "build": "docker-compose build",
-    "prod:start": "yarn prod:build && docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d",
-    "prod:clean": "rm -rf app/node_modules app/dist",
-    "prod:build": "cd app && yarn && yarn build && cd .. && docker-compose -f docker-compose.yml -f docker-compose.prod.yml build",
+    "prod:start": "yarn prod:build && docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f sleep/sleep.yml up -d",
+    "prod:clean": "rm -rf app/node_modules app/dist sleep/app/node_modules sleep/app/dist",
+    "prod:build": "cd app && yarn && yarn build && cd ../sleep/app && yarn build && cd ../.. && docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f sleep/sleep.yml build",
     "stop": "docker-compose down && docker-compose rm -vf",
     "logs": "docker-compose logs -f",
     "ps": "docker-compose ps",

@@ -1,4 +1,3 @@
-
 FROM node:latest
 COPY ./sleep/app /opt/app
 
