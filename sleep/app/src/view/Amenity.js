@@ -80,7 +80,7 @@ export const AmenityValueDialog = ({ amenity, onClose, onSubmit }: DialogProps):
         <TextField 
           autoFocus
           required
-          type={def?.value} 
+          type={def?.valueType} 
           value={value} 
           onChange={e => setValue(e.target.value)}/>
       </DialogContent>

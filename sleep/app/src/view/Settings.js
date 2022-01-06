@@ -15,13 +15,14 @@ import {
 import { 
   Logout
 } from '@mui/icons-material';
-import { auth } from '@authweb/service';
 
 const Settings = ():React$Node => {
-  const { deleteToken } = auth.useToken();
+  const logout = () => {
+    console.log('TODO');
+  };
   return (
     <List>
-      <ListItemButton onClick={deleteToken}>
+      <ListItemButton onClick={logout}>
         <ListItemIcon>
           <Logout />
         </ListItemIcon>

@@ -58,7 +58,8 @@ module.exports = {
       'REACT_APP_TOKEN_URI',
       'REACT_APP_APP_URI',
       'REACT_APP_API_URI',
-      'BASE_URI'
+      'BASE_URI',
+      'DASHBOARD_URI'
     ]),
     new HtmlWebpackPlugin({
       filename: path.join(__dirname, 'dist', 'index.html'),

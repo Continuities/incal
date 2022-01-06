@@ -8,6 +8,7 @@
 import React, { useState, createRef } from 'react';
 import { api } from '@authweb/service';
 import { PlaceMedia } from '@view/Places';
+import { useNavigate } from 'react-router-dom';
 import {
   Fab,
   Dialog,
@@ -24,7 +25,7 @@ import {
   Menu,
   MenuItem
 } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Add, Edit } from '@mui/icons-material';
 import { Amenities } from '@service/place';
 import { useSnack } from '@service/snackbar';
 import { 
@@ -32,41 +33,55 @@ import {
   AmenityLabel,
   AmenityValueDialog
 } from '@view/Amenity';
+import RulesEditor from '@view/RulesEditor';
 
 import type { Place, Amenity } from '@service/place';
-import type { AmenityDefinition, AmenityType } from "../service/place";
 
 type Props = {|
   sx?: any,
-  onCreate?: () => void
+  onComplete?: () => void,
+  edit?: Place
 |};
 
-const CreatePlaceButton = ({ sx, onCreate }: Props):React$Node => {
+const PlaceDialogButton = ({ sx, onComplete, edit }: Props):React$Node => {
   const [ showDialog, setShowDialog ] = useState(false);
   const [ place, setPlace ] = useState<Place>({
-    id: '',
-    name: '',
-    amenities: [],
-    bookings: []
+    id: edit?.id ?? '',
+    name: edit?.name ?? '',
+    photo: edit?.photo,
+    amenities: edit?.amenities ?? [],
+    bookings: edit?.bookings ?? [],
+    rules: edit?.rules ?? []
   });
   const [ error, setError ] = useState(null);
+  const [ isDeleting, setDeleting ] = useState(false);
   const Api = api.useApi();
+  const navigate = useNavigate();
   
   const close = () => setShowDialog(false);
-  const create = async e => {
+  const submit = async e => {
     e.preventDefault();
-    const response = await Api.doPost(
-      '/place', 
-      null, 
-      JSON.stringify(place)
-    );
+    const response = edit ? 
+      await Api.doPut(`/place/${edit.id}`, null, JSON.stringify(place)): 
+      await Api.doPost('/place', null, JSON.stringify(place));
     if (response.status === 'error') {
       setError(response.description);
     }
     else {
-      onCreate && onCreate();
+      onComplete && onComplete();
       setError(null);
       close();
+    }
+  };
+  const deletePlace = async () => {
+    const response = await Api.doDelete(`/place/${String(edit?.id)}`);
+    if (response.status === 'error') {
+      setError(response.description);
+    }
+    else {
+      setError(null);
+      close();
+      navigate('/', { replace: true });
     }
   };
   const set = (key:string, value) => setPlace(p => ({
@@ -77,16 +92,16 @@ const CreatePlaceButton = ({ sx, onCreate }: Props):React$Node => {
   return (
     <>
       <Fab color='primary' sx={sx} onClick={() => setShowDialog(true)}>
-        <Add />
+        {edit ? <Edit /> : <Add />}
       </Fab>
       <Dialog 
         fullScreen
         component='form'
         open={showDialog} 
         onClose={() => setShowDialog(false)}
-        onSubmit={create}
+        onSubmit={submit}
       >
-        <DialogTitle>Add Place</DialogTitle>
+        <DialogTitle>{`${edit ? 'Edit' : 'Add'} Place`}</DialogTitle>
         <DialogContent>
           <Stack direction='column' spacing={2}>
             <UploadPhotoButton 
@@ -107,16 +122,53 @@ const CreatePlaceButton = ({ sx, onCreate }: Props):React$Node => {
             <AmenitiesList 
               amenities={place.amenities} 
               onChange={amenities => set('amenities', amenities)} />
+            <RulesEditor 
+              rules={place.rules} 
+              onAdd={rule => setPlace(p => ({ 
+                ...p, rules: [ ...p.rules, rule ]
+              }))}
+              onDelete={index => setPlace(p => ({
+                ...p,
+                rules: p.rules.filter((_,i) => i !== index)
+              }))}
+              onChange={(index, rule) => setPlace(p => ({
+                ...p,
+                rules: p.rules.map((r, i) => i === index ? rule : r)
+              }))}
+            />
             <DialogActions>
               <Button onClick={close}>Cancel</Button>
-              <Button type='submit'>Create</Button>
+              <Button type='submit'>{edit ? 'Update' : 'Create'}</Button>
+              {edit && <Button color='error' onClick={() => setDeleting(true)}>Delete</Button>}
             </DialogActions>
           </Stack>
         </DialogContent>
+        <DeleteDialog 
+          open={isDeleting} 
+          onClose={() => setDeleting(false)} 
+          onDelete={deletePlace} />
       </Dialog>
     </>
   )
 };
+
+const DeleteDialog = ({ open, onClose, onDelete }) => (
+  <Dialog open={open} onClose={onClose}>
+    <DialogTitle>Are you sure?</DialogTitle>
+    <DialogContent>
+      <DialogContentText>
+        Are you sure you want to delete this place? This cannot be undone.
+      </DialogContentText>
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={onClose}>Cancel</Button>
+      <Button color='error' onClick={() => {
+        onDelete();
+        onClose();
+      }}>Delete</Button>
+    </DialogActions>
+  </Dialog>
+);
 
 const UploadPhotoButton = ({ onBegin, onComplete, children, place }) => {
   const Api = api.useApi();
@@ -200,7 +252,7 @@ const AmenitiesList = ({ amenities, onChange }) => {
   const onSelect = type => {
     const def = Amenities.get(type);
     if (!def) { return; }
-    if (!def.value) {
+    if (!def.valueType) {
       onChange([ ...amenities, { type } ]);
       return;
     }
@@ -278,4 +330,4 @@ const AmenitiesMenu = ({ options, anchor, onClose, onSelect }) => (
   </Menu>
 );
 
-export default CreatePlaceButton;
+export default PlaceDialogButton;

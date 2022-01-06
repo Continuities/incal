@@ -8,10 +8,11 @@
 import fetch from 'node-fetch';
 import { Client, Server } from '../config.js';
 import { URLSearchParams } from "url";
-import { evaluate } from './rule.js';
+import { Rule, evaluate } from './rule.js';
 
 import type { RulePredicate } from './rule.js';
 import type { Tagged } from '../util.js';
+import type { Place } from './place.js';
 
 const USER_URI = String(process.env.USER_URI);
 
@@ -89,11 +90,15 @@ export const getToken = async (code:string):Promise<?Token> => {
   }
 };
 
-export const secured = (rules?:Array<RulePredicate>):any => (req, res, next) => {
-  if (!req.user) {
-    return res.sendStatus(401);
-  }
-  if (rules && !evaluate(rules, req)) {
+type SecuredOptions = {|
+  user?: (req:any) => Promise<?any>, // User resolver
+  place?: (req:any) => Promise<?Tagged<Place>> // Place resolver
+|};
+
+export const secured = (rules?:Array<RulePredicate>, options?:SecuredOptions):any => async (req, res, next) => {
+  const user = options?.user ? await options.user(req) : req.user;
+  const place = options?.place ? await options.place(req) : null;
+  if (!evaluate(rules || [ Rule.minSponsors(1) ], user, place)) {
     return res.sendStatus(401);
   }
   next();

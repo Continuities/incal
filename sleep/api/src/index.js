@@ -17,7 +17,9 @@ import {
   getPlaces, 
   getPlace, 
   getBookings,
-  createPlace, 
+  createPlace,
+  updatePlace,
+  deletePlace,
   reservePlace,
   cancelReservation
 } from './service/place.js';
@@ -80,8 +82,6 @@ app.get('/login', async (req, res) => {
   res.sendStatus(200);
 });
 
-// TODO: Protect routes with authorisation
-
 app.get('/user', secured(), async (req, res) => {
   try {
     res.send(JSON.stringify(req.user));
@@ -95,7 +95,7 @@ app.get('/user', secured(), async (req, res) => {
 app.get('/place', secured(), async (req, res) => {
   try {
     const { guest } = req.query;
-    const places = await (guest ? getBookings(guest) : getPlaces());
+    const places = await (guest ? getBookings(guest, req.user) : getPlaces(req.user));
     res.send(JSON.stringify(places));
   }
   catch (e) {
@@ -107,7 +107,7 @@ app.get('/place', secured(), async (req, res) => {
 app.get('/place/:id', secured(), async (req, res) => {
   try {
     const { id } = req.params;
-    const place = await getPlace(id);
+    const place = await getPlace(id, req.user);
     if (!place) {
       return res.sendStatus(404);
     }
@@ -135,6 +135,44 @@ app.post('/place', secured([
   }
 });
 
+app.put('/place/:placeId', 
+  secured([ Rule.isOwner() ], { 
+    place: req => getPlace(req.params.placeId, req.user)
+  }), 
+  async (req, res) => {
+    try {
+      const { placeId } = req.params;
+      const newPlace = req.body;
+      if (placeId !== newPlace.id) {
+        return res.sendStatus(401);
+      }
+      const place = await updatePlace(placeId, req.body);
+      res.send(JSON.stringify(place));
+    }
+    catch (e) {
+      console.log(e);
+      return res.status(400).send(e);
+    }
+  }
+);
+
+app.delete('/place/:placeId',
+  secured([ Rule.isOwner() ], { 
+    place: req => getPlace(req.params.placeId, req.user)
+  }), 
+  async (req, res) => {
+    try {
+      const { placeId } = req.params;
+      await deletePlace(placeId);
+      res.sendStatus(204);
+    }
+    catch (e) {
+      console.log(e);
+      return res.status(500).send(e);
+    }
+  }
+);
+
 app.post('/place/:placeId/booking', secured(), async (req, res) => {
   const {
     placeId
@@ -157,6 +195,7 @@ app.post('/place/:placeId/booking', secured(), async (req, res) => {
   }
 });
 
+// TODO: Don't let users delete other people's bookings
 app.delete('/place/:placeId/booking/:bookingId', secured(), async (req, res) => {
   const {
     placeId,

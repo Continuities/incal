@@ -6,8 +6,10 @@
  **/
 import { v4 as uuid } from 'uuid';
 import collection, { sanitise } from './db.js';
+import { parse, evaluate } from './rule.js';
 
 import type { Tagged } from '../util.js';
+import type { RuleDefinition } from './rule.js';
 
 // TODO: Share type definitions with app
 export type PlaceId = string;
@@ -17,7 +19,8 @@ export type Place = {|
   name: string,
   photo?: string,
   amenities: Array<Amenity>,
-  bookings: Array<Booking>
+  bookings: Array<Booking>,
+  rules: Array<RuleDefinition>
 |};
 
 export type AmenityType = 'sleeps' | 'heated';
@@ -39,31 +42,39 @@ export type Booking = {|
 
 const COLLECTION = 'place';
 
-const withTags = (place:Place):Tagged<Place> => ({
+const canBook = (place:Tagged<Place>, user:?Tagged<any>) => {
+  if (!user) { return false; }
+  return evaluate(parse(place.rules || []), user, place);
+};
+
+const withTags = (place:Place, user?:any):Tagged<Place> => ({
   ...place,
-  tags: [] // TODO
+  tags: [
+    user?.email === place.owner ? 'editable' : null
+  ].filter(Boolean)
 });
 
-export const getPlaces = async ():Promise<Array<Tagged<Place>>> => {
+export const getPlaces = async (user?:any):Promise<Array<Tagged<Place>>> => {
   const col = await collection(COLLECTION);
   const places = await col.find();
   return (await places.toArray())
     .map(sanitise)
-    .map(withTags);
+    .map(p => withTags(p, user))
+    .filter(p => canBook(p, user));
 };
 
-export const getBookings = async (userEmail:string): Promise<Array<Tagged<Place>>> => {
+export const getBookings = async (userEmail:string, user?:any): Promise<Array<Tagged<Place>>> => {
   const col = await collection(COLLECTION);
   const places = await col.find({ "bookings.guestId": userEmail });
   return (await places.toArray())
     .map(sanitise)
-    .map(withTags);
+    .map(p => withTags(p, user));
 };
 
-export const getPlace = async (id:PlaceId):Promise<?Tagged<Place>> => {
+export const getPlace = async (id:PlaceId, user?:any):Promise<?Tagged<Place>> => {
   const col = await collection(COLLECTION);
   const place = await col.findOne({ id });
-  return !place ? null : withTags(place);
+  return !place ? null : withTags(place, user);
 };
 
 export const reservePlace = async (placeId:PlaceId, booking:Booking):Promise<Booking> => {
@@ -77,7 +88,7 @@ export const reservePlace = async (placeId:PlaceId, booking:Booking):Promise<Boo
   return booking;
 };
 
-export const cancelReservation = async(placeId:PlaceId, bookingId:BookingId):Promise<void> => {
+export const cancelReservation = async (placeId:PlaceId, bookingId:BookingId):Promise<void> => {
   const col = await collection(COLLECTION);
   await col.updateOne({ id: placeId }, { $pull: { bookings: { id: bookingId }}});
 };
@@ -95,12 +106,28 @@ export const createPlace = async (input: any):Promise<Tagged<Place>> => {
     photo: input.photo,
     name: input.name,
     amenities: input.amenities || [],
+    rules: input.rules || [],
     bookings: []
   };
-  col.insert(place);
+  await col.insert(place);
 
   return withTags(place)
 };
+
+export const updatePlace = async (placeId:string, data:Place):Promise<Place> => {
+  const col = await collection(COLLECTION);
+  const val = {
+    ...data,
+    id: placeId
+  };
+  await col.updateOne({ id: placeId }, { $set: val });
+  return val;
+};
+
+export const deletePlace = async (placeId:string):Promise<void> => {
+  const col = await collection(COLLECTION);
+  await col.deleteOne({ id: placeId });
+}
 
 export const requiresApproval = (placeId:PlaceId, booking:Booking):boolean => {
   // TODO: implement booking approval

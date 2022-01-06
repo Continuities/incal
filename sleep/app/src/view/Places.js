@@ -10,7 +10,7 @@ import { api } from '@authweb/service';
 import { usePlaces } from '@service/place';
 import { Link } from 'react-router-dom';
 import { AmenityTag } from '@view/Amenity';
-import CreatePlaceButton from '@view/CreatePlaceButton';
+import PlaceDialogButton from '@view/PlaceDialogButton';
 import {
   Box,
   Typography,
@@ -54,8 +54,8 @@ const Places = ():React$Node => {
         </api.ApiResolver>
       </Stack>
       { user?.tags.includes('can-create') && (
-        <CreatePlaceButton 
-          onCreate={refresh}
+        <PlaceDialogButton 
+          onComplete={refresh}
           sx={{
             position: 'fixed',
             right: '10%',

@@ -17,6 +17,7 @@ import { useSnack } from '@service/snackbar';
 
 import type { StayDates } from '@service/date';
 import type { ApiResponse } from '@authweb/service';
+import type { Rule } from '@service/rule';
 
 // TODO: Share type definitions with api
 export type PlaceId = string;
@@ -25,7 +26,9 @@ export type Place = {|
   name: string,
   photo?: string,
   amenities: Array<Amenity>,
-  bookings: Array<Booking>
+  bookings: Array<Booking>,
+  rules: Array<Rule>,
+  tags?: Array<string>
 |};
 
 export type BookingId = string;
@@ -38,7 +41,6 @@ export type Booking = {|
   guestId: string
 |};
 
-
 export type AmenityType = 
   'sleeps' | 
   'heated';
@@ -46,7 +48,7 @@ export type AmenityType =
 export type AmenityDefinition = {|
   label: string,
   Icon: React$ComponentType<any>,
-  value?:string
+  valueType?:string
 |};
 
 export type Amenity = {|
@@ -143,7 +145,7 @@ export const Amenities:Map<AmenityType, AmenityDefinition> = new Map([
   [ 'sleeps', { 
     label: 'sleeps', 
     Icon: Hotel,
-    value: 'number'
+    valueType: 'number'
   } ],
   [ 'heated', { 
     label: 'heated', 
