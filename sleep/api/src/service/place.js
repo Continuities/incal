@@ -109,7 +109,7 @@ export const createPlace = async (input: any):Promise<Tagged<Place>> => {
     rules: input.rules || [],
     bookings: []
   };
-  await col.insert(place);
+  await col.insertOne(place);
 
   return withTags(place)
 };
