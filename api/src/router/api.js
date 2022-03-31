@@ -18,7 +18,8 @@ import {
   removeAnchor,
   saveUser,
   removeUser,
-  updatePhoto
+  updatePhoto,
+  getSponsees
 } from '../service/user.js';
 import {
   savePhoto
@@ -27,6 +28,7 @@ import { sanitise } from '../service/db.js';
 import { 
   canSponsor, 
   saveInvite,
+  canDelete
 } from '../service/sponsorship.js';
 import { sendInvite } from '../service/mail.js';
 
@@ -59,6 +61,7 @@ export default ():any => {
     if (currentUser.tags.includes('anchor')) {
       user.tags.includes('anchor') && actions.push('remove_anchor');
       !user.tags.includes('anchor') && actions.push('add_anchor');
+      canDelete(currentUser, user) && actions.push('delete');
     }
 
     res.json(
@@ -94,6 +97,24 @@ export default ():any => {
     res.json(users.map(sanitise));
   });
 
+  // Delete user
+  router.delete('/user/:email', async (req, res) => {
+    const { email } = req.params;
+    const currentUser = getCurrentUser(req, res);
+    const isAnchor = currentUser.tags.includes('anchor');
+    const user = await getUser(email);
+    if (!user || !canDelete(currentUser, user)) {
+      return res.sendStatus(401);
+    }
+
+    // Delete sponsees
+    await Promise.all(user.sponsees.map(sponsee => removeSponsor(sponsee.email, email)));
+    // Delete user
+    await removeUser(email);
+
+    res.sendStatus(204);
+  });
+
   // Invite a sponsee
   router.put('/user/sponsees/:email', async (req, res) => {
     const { email } = req.params;
@@ -116,9 +137,13 @@ export default ():any => {
     });
 
     const invite = await saveInvite(currentUser.email, email);
-    await sendInvite(invite);
-
-    res.sendStatus(204);
+    try {
+      await sendInvite(invite);
+      res.sendStatus(204);
+    }
+    catch (e) {
+      res.sendStatus(501);
+    }
   });
 
   // Cancel an invite
@@ -220,7 +245,7 @@ export default ():any => {
     res.sendStatus(204);
   });
 
-  // Remoke an anchor
+  // Remove an anchor
   router.delete('/anchors/:email', async (req, res) => {
     const { email } = req.params;
     if (!getCurrentUser(req, res).tags.includes('anchor')) {

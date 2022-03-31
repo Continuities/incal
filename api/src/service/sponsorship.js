@@ -65,6 +65,9 @@ export const canSponsor = async (sponsor:?User, user?:?User):Promise<bool> => {
   return true;
 };
 
+export const canDelete = (user:?User, toDelete: ?User):boolean =>
+  Boolean(user && toDelete && user.tags.includes('anchor') && toDelete.tags.includes('orphan'))
+
 export const authorise = async (req:any, res:any, next:any):Promise<empty> => {
   const { token } = res.locals.oauth;
   const user = token?.user;

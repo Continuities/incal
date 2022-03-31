@@ -6,6 +6,7 @@
  **/
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Container,
   Grid,
@@ -34,7 +35,8 @@ import {
   ConnectWithoutContact,
   Anchor,
   Close,
-  AddAPhoto
+  AddAPhoto,
+  Delete
 } from '@mui/icons-material';
 import { auth, api } from '@authweb/service';
 import UserList from '@view/UserList';
@@ -67,6 +69,7 @@ const Profile = ({ user, refresh }: Props):React$Node => {
   const isMe = me?.email === user.email;
   const userActions:Set<UserAction> = new Set(actions);
   const Api = api.useApi();
+  const navigate = useNavigate();
 
   const canSponsor = userActions.has('sponsor') || userActions.has('remove_sponsor');
 
@@ -84,6 +87,11 @@ const Profile = ({ user, refresh }: Props):React$Node => {
   const remSponsor = button(() => Api.doDelete(`/user/${email}/sponsors/${me?.email || ''}`, token));
   const addAnchor = button(() => Api.doPut(`/anchors/${email}`, token));
   const removeAnchor = button(() => Api.doDelete(`/anchors/${email}`, token));
+  const deleteUser = async () => {
+    setDisableButtons(true);
+    await Api.doDelete(`/user/${email}`, token);
+    navigate('/users', { replace: true });
+  }
 
   return (
     <Grid container 
@@ -200,6 +208,13 @@ const Profile = ({ user, refresh }: Props):React$Node => {
             <Tooltip title='Revoke anchor'>
               <IconButton onClick={removeAnchor}>
                 <Close />
+              </IconButton>
+            </Tooltip>
+          )}
+          { !isMe && userActions.has('delete') && (
+            <Tooltip title='Delete user'>
+              <IconButton onClick={deleteUser}>
+                <Delete />
               </IconButton>
             </Tooltip>
           )}
