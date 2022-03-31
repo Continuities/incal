@@ -55,7 +55,7 @@ const withTags = user => {
 
 export const getUser = async (email:string):Promise<?User> => {
   const users = await collection(COLLECTION);
-  const user = await users.findOne({ email });
+  const user = await users.findOne({ email: new RegExp(email, 'i') });
   if (!user) {
     return null;
   }

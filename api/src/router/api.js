@@ -142,6 +142,7 @@ export default ():any => {
       res.sendStatus(204);
     }
     catch (e) {
+      console.error(e);
       res.sendStatus(501);
     }
   });

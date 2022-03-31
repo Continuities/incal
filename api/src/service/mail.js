@@ -12,12 +12,21 @@ import type { Invite } from './sponsorship.js';
 
 const FROM = String(process.env.MAIL_FROM);
 const SUBJECT = String(process.env.MAIL_SUBJECT);
+const SMTP_HOST = process.env.SMTP_HOST ?? 'smtp';
+const SMTP_PORT = process.env.SMTP_PORT ?? 25;
+const SMTP_USERNAME = process.env.SMTP_USERNAME ?? '';
+const SMTP_PASSWORD = process.env.SMTP_PASSWORD ?? '';
+
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp',
-    port: 25,
+    host: SMTP_HOST,
+    port: SMTP_PORT,
     secure: false,
-    tls: { rejectUnauthorized: false }
+    tls: { rejectUnauthorized: false },
+    auth: {
+      user: SMTP_USERNAME,
+      pass: SMTP_PASSWORD
+    }
 });
 
 export const sendInvite = async (invite:Invite) => {

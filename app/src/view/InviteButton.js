@@ -31,12 +31,25 @@ const InviteButton = ({ sx, onInvite }: Props):React$Node => {
   const [ email, setEmail ] = useState('');
   const [ error, setError ] = useState(null);
   const [ success, setSuccess ] = useState(false);
+  const [ submitting, setSubmitting ] = useState(false);
   const { token } = auth.useToken();
   const Api = api.useApi();
 
-  const close = () => setDialogOpen(false);
+  const open = () => {
+    setSuccess(false);
+    setError(null);
+    setEmail('');
+    setSubmitting(false);
+    setDialogOpen(true)
+  };
+  const close = () => {
+    if (submitting) { return; }
+    setDialogOpen(false);
+  };
   const invite = async e => {
     e.preventDefault();
+    e.cancelBubble = true;
+    setSubmitting(true);
     const response = await Api.doPut(`/user/sponsees/${email}`, token);
     if (response.status === 'error') {
       setError(response.description);
@@ -45,6 +58,7 @@ const InviteButton = ({ sx, onInvite }: Props):React$Node => {
       onInvite && onInvite();
       setError(null);
       setSuccess(true);
+      setSubmitting(false);
     }
   };
 
@@ -53,7 +67,7 @@ const InviteButton = ({ sx, onInvite }: Props):React$Node => {
       <Fab 
         color='primary' 
         sx={sx}
-        onClick={() => setDialogOpen(true)}
+        onClick={open}
       >
         <PersonAdd />
       </Fab>
@@ -79,12 +93,17 @@ const InviteButton = ({ sx, onInvite }: Props):React$Node => {
             variant='standard'
             margin='dense'
             label='Email address'
+            disabled={submitting}
             value={email} 
             onChange={e => setEmail(e.target.value)}/>}
         </DialogContent>
         <DialogActions>
-          <Button onClick={close}>{success ? 'Close' : 'Cancel'}</Button>
-          {!success && <Button type='submit'>Invite</Button>}
+          <Button disabled={submitting} onClick={close}>
+            {success ? 'Close' : 'Cancel'}
+          </Button>
+          {!success && <Button disabled={submitting} type='submit'>
+            Invite
+          </Button>}
         </DialogActions>
       </Dialog>
     </>
