@@ -21,13 +21,13 @@ export type UserStub = {|
   email: string,
   firstname: string,
   lastname: string,
+  photo: ?string,
   tags: Array<UserTag>
 |}
 
 export type User = {|
   ...UserStub,
   isAnchor?: bool,
-  photo: ?string,
   sponsors: Array<UserStub>,
   sponsees: Array<UserStub>,
   hash: string
@@ -39,6 +39,7 @@ const toStub = user => ({
   email: user.email,
   firstname: user.firstname,
   lastname: user.lastname,
+  photo: user.photo,
   tags: user.tags
 });
 
