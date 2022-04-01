@@ -38,8 +38,8 @@ const Directory = ():React$Node => {
           refreshUser();
         }}
         sx={{
-          position: 'absolute',
-          bottom: 20,
+          position: 'fixed',
+          bottom: 80,
           right: 40
         }}/>}
     </Content>

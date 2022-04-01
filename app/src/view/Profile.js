@@ -152,7 +152,7 @@ const Profile = ({ user, refresh }: Props):React$Node => {
           </Avatar>
         </Badge>
       </Grid>
-      <Grid item align='center'>
+      <Grid item align='center' sx={{ width: 1 }}>
         <Username user={user} variant='h1' justify='center' />
         <Typography 
           component={Link} 
@@ -220,7 +220,7 @@ const Profile = ({ user, refresh }: Props):React$Node => {
           )}
         </ButtonGroup>
       </Grid>
-      <Grid item sx={{ mx: 7 }}>
+      <Grid item sx={{ width: 1 }}>
         <Tabs 
           centered 
           value={tab} 

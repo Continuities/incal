@@ -30,7 +30,11 @@ const Username = ({ user, variant = 'body1', justify = 'flex-start' }: Props):Re
     alignItems: 'center',
     justifyContent: justify
   }}>
-      <Typography variant={variant}>
+      <Typography variant={variant} sx={{
+        maxWidth: '100%',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden'
+      }}>
         { user.firstname && user.lastname ? 
           `${user.firstname} ${user.lastname}` : 
           user.email }

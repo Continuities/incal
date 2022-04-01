@@ -40,6 +40,7 @@ const UserList = ({ users, title }: Props):React$Node => {
           component={Link} 
           to={`/${user.email}`}
           key={user.email}
+          sx={{ overflow: 'hidden' }}
         >
           <ListItemIcon>
             <Avatar src={user.photo && `/public/${user.photo}`}>{(user.firstname || user.email)[0]}</Avatar>

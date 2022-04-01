@@ -58,8 +58,8 @@ const InviteButton = ({ sx, onInvite }: Props):React$Node => {
       onInvite && onInvite();
       setError(null);
       setSuccess(true);
-      setSubmitting(false);
     }
+    setSubmitting(false);
   };
 
   return (
