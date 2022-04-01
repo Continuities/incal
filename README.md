@@ -1,4 +1,4 @@
-authWeb
+INCAL
 =
 
 An oAuth2 server using directed graphs for the decentralisation of authority.
