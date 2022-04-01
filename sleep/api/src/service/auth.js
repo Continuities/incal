@@ -1,5 +1,5 @@
 /**
- * Handles authentication with authWeb
+ * Handles authentication with INCAL
  * @author mtownsend
  * @since December 10, 2021
  * @flow

@@ -74,7 +74,7 @@ export const authorise = async (req:any, res:any, next:any):Promise<empty> => {
   if (!user || user.tags.includes('orphan')) {
     return res.sendStatus(401);
   }
-  res.locals.authWeb = { user };
+  res.locals.incal = { user };
   return next();
 };
 

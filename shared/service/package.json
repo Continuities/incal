@@ -1,7 +1,7 @@
 {
   "name": "@authweb/service",
   "version": "0.1.0",
-  "description": "Shared service modules for authWeb applications",
+  "description": "Shared service modules for INCAL applications",
   "main": "dist/index.js",
   "author": "mtownsend",
   "license": "MIT",

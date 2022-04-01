@@ -1,5 +1,5 @@
 /**
- * Shared service modules for authWeb
+ * Shared service modules for INCAL
  * @author mtownsend
  * @since October 18, 2021
  * @flow

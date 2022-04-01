@@ -15,7 +15,7 @@ import { renderTemplate } from '../service/template.js';
 
 import type { User } from '../service/user.js';
 
-const COMMUNITY_NAME = process.env.COMMUNITY_NAME || 'authWeb';
+const COMMUNITY_NAME = process.env.COMMUNITY_NAME || 'INCAL';
 const CSRF_TOKEN_EXPIRES_IN = 1000 * 60 * 2;// 2 minutes
 
 const getRequestUrl = req => `${req.protocol}://${req.get('host')}${req.originalUrl}`;

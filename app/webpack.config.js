@@ -60,7 +60,7 @@ module.exports = {
     ]),
     new HtmlWebpackPlugin({ 
       template: './static/index.html',
-      title: 'authWeb'
+      title: 'INCAL'
     }),
     new FaviconsWebpackPlugin({
       logo: './static/nyan.svg',

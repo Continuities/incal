@@ -137,7 +137,7 @@ export const refreshSessionUserMiddleware = async (req:any, res:any, next:any) =
 };
 
 export const getCurrentUser = (req:any, res:any):User => {
-  const { user: tokenUser } = res.locals.authWeb;
+  const { user: tokenUser } = res.locals.incal;
   const { user: sessionUser } = req.session;
   return tokenUser || sessionUser;
 };
