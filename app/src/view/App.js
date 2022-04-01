@@ -32,8 +32,8 @@ const API = process.env.REACT_APP_API_URI || '';
 const App = ():React$Node => {
   return (
     <BrowserRouter>
-      <CssBaseline />
       <ThemeProvider theme={theme}>
+        <CssBaseline />
         <auth.TokenProvider client={Client} server={Server}>
           <api.ApiProvider uri={API}>
             <auth.UserProvider>
