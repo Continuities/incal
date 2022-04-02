@@ -1,0 +1,30 @@
+
+version: '3'
+
+services:
+
+  launchpad_app:
+    build: 
+      context: .
+      dockerfile: launchpad/app/Dockerfile
+    image: launchpad-app
+    environment:
+      - NODE_ENV=production
+      - EXTRA_WEBPACK_DEV_SERVER_ARGS
+      - PORT=3000
+      - BASE_URI=/launchpad/
+
+  launchpad_api:
+    build:
+      context: launchpad/api
+    image: launchpad-api
+    environment:
+      - PORT=8080
+      - DB_URI=mongodb://db
+      - DB_NAME=launchpad
+      - SERVER_URI=http://localhost
+    links:
+      - db
+    depends_on:
+      - db
+

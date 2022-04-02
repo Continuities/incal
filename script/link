@@ -13,4 +13,5 @@ dir=$(dirname $0)
 (cd $dir/../app;yarn link @authweb/service)
 
 (cd $dir/../sleep/app;yarn link react && yarn link @authweb/service)
+(cd $dir/../launchpad/app;yarn link react && yarn link @authweb/service)
 

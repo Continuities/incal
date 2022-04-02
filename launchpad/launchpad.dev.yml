@@ -1,0 +1,28 @@
+
+version: '3'
+
+services:
+
+  launchpad_app:
+    build:
+      dockerfile: launchpad/app/Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./launchpad/app:/opt/app
+      - /opt/app/node_modules # anonymous volume for node_modules only
+    ports:
+      - 3002:3000 # For docker to know where to redirect HMR queries
+
+  launchpad_api:
+    build:
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./launchpad/api:/opt/api
+      - /opt/api/node_modules # anonymous volume for node_modules only
+    ports:
+      - 8082:8080 # unbind this in prod
+
+
