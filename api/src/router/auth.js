@@ -245,7 +245,7 @@ export default (oauth:any):any => {
     const callbackUri = Buffer.from(callback_uri, 'base64').toString('utf-8');
 
     const user:?User = await getUser(email);
-    if (!user || !user.hash /*|| !(await bcrypt.compare(password, user.hash)) TODO!!!!! */) {
+    if (!user || !user.hash || !(await bcrypt.compare(password, user.hash))) {
       return forwardToLogin(res, callbackUri);
     }
 
