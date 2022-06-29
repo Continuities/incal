@@ -20,15 +20,16 @@ const CSRF_TOKEN_EXPIRES_IN = 1000 * 60 * 2;// 2 minutes
 
 const getRequestUrl = req => `${req.protocol}://${req.get('host')}${req.originalUrl}`;
 const removeUserAction =  url => url.replace(/&?(deny|agree|logout|csrfToken)=[^&]+/g, '');
-const forwardToLogin = async (res, callbackUri) => 
+const forwardToLogin = async (res, callbackUri, error = null) => 
   forwardToView(res, 'login', {
     community: COMMUNITY_NAME,
     callbackUri: Buffer.from(callbackUri, 'utf-8').toString('base64'),
     loginUrl: `${String(process.env.SERVER_URI)}/oauth/login`,
-    registerUrl: `${String(process.env.SERVER_URI)}/oauth/register`
+    registerUrl: `${String(process.env.SERVER_URI)}/oauth/register`,
+    error: error ?? ''
   });
 
-const forwardToView = async (res, viewName:string, viewModel:{[string]:string}) => {
+const forwardToView = async (res, viewName:string, viewModel:{[string]:?string}) => {
   try {
     res
       .status(200)
@@ -60,7 +61,7 @@ export default (oauth:any):any => {
       userConfirmCsrfToken 
     } = req.session;
     
-    if (!client_id || !scope) {
+    if (!client_id) {
       return res.sendStatus(400);
     }
     const client = await getClient(client_id);
@@ -68,9 +69,9 @@ export default (oauth:any):any => {
       return res.sendStatus(401);
     }
 
-    const scopes = decodeURIComponent(scope)
+    const scopes = scope ? decodeURIComponent(scope)
       .split(',')
-      .map(s => s.trim());
+      .map(s => s.trim()) : ['user_info:read'];
 
     const requestUrl = removeUserAction(getRequestUrl(req));
 
@@ -246,7 +247,7 @@ export default (oauth:any):any => {
 
     const user:?User = await getUser(email);
     if (!user || !user.hash || !(await bcrypt.compare(password, user.hash))) {
-      return forwardToLogin(res, callbackUri);
+      return forwardToLogin(res, callbackUri, 'Invalid username or password');
     }
 
     // Note: this session user is only for direct login to the
@@ -261,7 +262,8 @@ export default (oauth:any):any => {
       // Session user is used during authorisation flow
       authenticateHandler: {
         handle: req => req.session.user
-      }
+      },
+      allowEmptyState: true
     })(req, res));
     return next();
   });
