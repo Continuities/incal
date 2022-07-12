@@ -47,6 +47,15 @@ const isExpired = (time) => Date.now() >= time;
 export default (oauth:any):any => {
   const router = express.Router();
 
+  const withDefaultScope = (req) => {
+    if (req.query.scope) {
+      return req;
+    }
+    req.query.scope = 'user_info%3Aread';
+    req.url = `${req.url}&scope=user_info%3read`;
+    return req;
+  }
+
   const checkLogin = async (req, res, next) => {
     const { 
       client_id, 
@@ -55,13 +64,13 @@ export default (oauth:any):any => {
       agree, 
       deny, 
       logout 
-    } = req.query;
+    } = withDefaultScope(req).query;
     const { 
       user, 
       userConfirmCsrfToken 
     } = req.session;
     
-    if (!client_id) {
+    if (!client_id || !scope) {
       return res.sendStatus(400);
     }
     const client = await getClient(client_id);
@@ -69,9 +78,9 @@ export default (oauth:any):any => {
       return res.sendStatus(401);
     }
 
-    const scopes = scope ? decodeURIComponent(scope)
+    const scopes = decodeURIComponent(scope)
       .split(',')
-      .map(s => s.trim()) : ['user_info:read'];
+      .map(s => s.trim());
 
     const requestUrl = removeUserAction(getRequestUrl(req));
 
@@ -264,7 +273,7 @@ export default (oauth:any):any => {
         handle: req => req.session.user
       },
       allowEmptyState: true
-    })(req, res));
+    })(withDefaultScope(req), res));
     return next();
   });
 
@@ -275,7 +284,7 @@ export default (oauth:any):any => {
           authorization_code: false,
           refresh_token: false
         }
-      })(req, res);
+      })(withDefaultScope(req), res);
       return res.status(200).json(token);
     }
     catch (err) {
