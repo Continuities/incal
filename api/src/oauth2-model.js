@@ -106,7 +106,7 @@ export default {
     * @return {Object} token - the token object saved, same as the parameter 'token'
     */
     saveToken: async (token:any, client:any, user:any):Promise<any> => {
-
+      console.log('===SAVETOKEN===', token, client, user);
       const commonInfo = {
         client: client.id,
         user: user.email,
@@ -126,6 +126,8 @@ export default {
           refreshTokenExpiresAt: token.refreshTokenExpiresAt
         });
       }
+
+      console.log('===DONE===', token, commonInfo);
 
       return {
         ...token,

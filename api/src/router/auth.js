@@ -51,8 +51,8 @@ export default (oauth:any):any => {
     if (req.query.scope) {
       return req;
     }
-    req.query.scope = 'user_info%3Aread';
-    req.url = `${req.url}&scope=user_info%3read`;
+    req.query.scope = 'user_info:read';
+    req.url = `${req.url}&scope=user_info%3Aread`;
     return req;
   }
 
@@ -284,7 +284,7 @@ export default (oauth:any):any => {
           authorization_code: false,
           refresh_token: false
         }
-      })(withDefaultScope(req), res);
+      })(req, res);
       return res.status(200).json(token);
     }
     catch (err) {
