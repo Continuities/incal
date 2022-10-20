@@ -20,6 +20,7 @@ import {
   saveResetRequest, } from '../service/user.js';
 import { getInvite, removeInvite } from '../service/sponsorship.js';
 import { renderTemplate } from '../service/template.js';
+import { sendReset } from '../service/mail.js';
 
 import type { User } from '../service/user.js';
 
@@ -166,7 +167,14 @@ export default (oauth:any):any => {
     const user = await getUser(email);
     if (user) {
       // don't leak whether this email is valid or not
-      await saveResetRequest(email);
+      const resetRequest = await saveResetRequest(email);
+      try {
+        await sendReset(resetRequest);
+      }
+      catch (e) {
+        console.error(e);
+        res.sendStatus(501);
+      }
     }
     return forwardToView(res, 'forgot-confirm', {
       community: COMMUNITY_NAME
