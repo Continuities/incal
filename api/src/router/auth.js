@@ -9,7 +9,15 @@ import express from 'express';
 import { promises as fs } from 'fs';
 import bcrypt from 'bcrypt';
 import { getClient } from '../service/client.js';
-import { getAnchors, getUser, saveUser, upgradeUser } from '../service/user.js';
+import { 
+  getAnchors, 
+  getUser, 
+  saveUser, 
+  upgradeUser,
+  changePassword,
+  getResetRequest,
+  removeResetRequest,
+  saveResetRequest, } from '../service/user.js';
 import { getInvite, removeInvite } from '../service/sponsorship.js';
 import { renderTemplate } from '../service/template.js';
 
@@ -26,6 +34,7 @@ const forwardToLogin = async (res, callbackUri, error = null) =>
     callbackUri: Buffer.from(callbackUri, 'utf-8').toString('base64'),
     loginUrl: `${String(process.env.SERVER_URI)}/oauth/login`,
     registerUrl: `${String(process.env.SERVER_URI)}/oauth/register`,
+    forgotUrl: `${String(process.env.SERVER_URI)}/oauth/forgot`,
     error: error ?? ''
   });
 
@@ -137,6 +146,56 @@ export default (oauth:any):any => {
       'scopeItems': scopeItems
     });
   };
+
+  router.get('/reset', async (req, res) => {
+    const { slug } = req.query;
+    const resetRequest = await getResetRequest(slug);
+    if (!resetRequest || resetRequest.expiresAt <= new Date()) {
+      return res.sendStatus(404);
+    }
+    return forwardToView(res, 'password-reset', {
+      community: COMMUNITY_NAME,
+      resetUrl: `${String(process.env.SERVER_URI)}/oauth/reset`,
+      slug,
+      error: ''
+    });
+  });
+
+  router.post('/forgot', async (req, res) => {
+    const { email } = req.body;
+    const user = await getUser(email);
+    if (user) {
+      // don't leak whether this email is valid or not
+      await saveResetRequest(email);
+    }
+    return forwardToView(res, 'forgot-confirm', {
+      community: COMMUNITY_NAME
+    });
+  });
+
+  router.post('/reset', async (req, res) => {
+    const { slug, password, confirm } = req.body;
+
+    const resetRequest = await getResetRequest(slug);
+    if (!resetRequest) {
+      return res.status(400).send('invalid reset request');
+    }
+
+    if (password !== confirm) {
+      return res.status(400).send('passwords do not match');
+    }
+
+    const saltRounds = parseInt(process.env.SALT_ROUNDS);
+    if (isNaN(saltRounds)) {
+      throw 'Non-numeric SALT_ROUNDS specified';
+    }
+    const hash = await bcrypt.hash(password, saltRounds);
+
+    await changePassword(resetRequest.user, hash);
+    await removeResetRequest(slug);
+
+    return forwardToLogin(res, String(process.env.SERVER_URI));
+  });
 
   router.get('/invite', async (req, res) => {
     const { slug } = req.query;

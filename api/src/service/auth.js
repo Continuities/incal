@@ -6,6 +6,7 @@
  **/
 
 import MemoryStore from 'simple-memory-storage';
+import collection from './db.js';
 import { getClient } from './client.js';
 import { getUser } from './user.js';
 import type { Client } from './client.js';

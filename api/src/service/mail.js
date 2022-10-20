@@ -9,9 +9,11 @@ import nodemailer from 'nodemailer';
 import { getUser } from './user.js';
 import { renderTemplate } from './template.js';
 import type { Invite } from './sponsorship.js';
+import type { PasswordResetRequest } from './user.js';
 
 const FROM = String(process.env.MAIL_FROM);
 const SUBJECT = String(process.env.MAIL_SUBJECT);
+const FORGOT_SUBJECT = String(process.env.FORGOT_SUBJECT);
 const SMTP_HOST = process.env.SMTP_HOST ?? 'smtp';
 const SMTP_PORT = process.env.SMTP_PORT ?? 25;
 const SMTP_USERNAME = process.env.SMTP_USERNAME ?? '';
@@ -50,5 +52,26 @@ export const sendInvite = async (invite:Invite) => {
     subject: SUBJECT,
     html
   });
-  console.log(info);
+};
+
+export const sendReset = async (resetRequest:PasswordResetRequest) => {
+  const user = await getUser(resetRequest.user);
+  if (!user) {
+    throw `Invalid user ${resetRequest.user}`;
+  }
+  await transporter.verify();
+  const html = await renderTemplate('forgot-email', {
+    community: String(process.env.COMMUNITY_NAME),
+    firstName: user.firstname,
+    link: `${String(process.env.SERVER_URI)}/oauth/reset?slug=${resetRequest.slug}`
+  });
+  const info = await transporter.sendMail({
+    from: {
+      name: String(process.env.MAIL_FROM_NAME),
+      address: FROM
+    },
+    to: resetRequest.user,
+    subject: FORGOT_SUBJECT,
+    html
+  });
 };

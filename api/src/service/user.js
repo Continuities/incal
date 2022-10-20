@@ -9,6 +9,7 @@ import collection, { sanitise } from './db.js';
 import { promises as fs } from 'fs';
 import { createHash } from 'crypto';
 import { join } from 'path';
+import { v4 as uuid } from 'uuid';
 
 import type { ReadStream } from 'fs';
 
@@ -32,6 +33,15 @@ export type User = {|
   sponsees: Array<UserStub>,
   hash: string
 |};
+
+export type PasswordResetRequest = {|
+  user: string,
+  slug: string,
+  expiresAt: Date
+|};
+
+const RESET_WINDOW = parseInt(process.env.RESET_WINDOW);
+const RESET_COLLECTION = 'reset';
 
 const COLLECTION = 'user';
 
@@ -140,4 +150,31 @@ export const getCurrentUser = (req:any, res:any):User => {
   const { user: tokenUser } = res.locals.incal;
   const { user: sessionUser } = req.session;
   return tokenUser || sessionUser;
+};
+
+export const saveResetRequest = async (user:string):Promise<PasswordResetRequest> => {
+  const col = await collection(RESET_COLLECTION);
+  const reset = {
+    user,
+    slug: uuid(),
+    expiresAt: new Date(Date.now() + RESET_WINDOW)
+  };
+  await col.insertOne(reset);
+  return reset;
+};
+
+export const getResetRequest = async (slug:?string):Promise<?PasswordResetRequest> => {
+  if (!slug) { return null; }
+  const col = await collection(RESET_COLLECTION);
+  return col.findOne({ slug, expiresAt: { $gt: new Date() } });
+};
+
+export const removeResetRequest = async (slug:?string):Promise<void> => {
+  const col = await collection(RESET_COLLECTION);
+  return col.deleteOne({ slug });
+}
+
+export const changePassword = async (email:string, hash:string):Promise<void> => {
+  const users = await collection(COLLECTION);
+  await users.updateOne({ email }, { $set: { hash }});
 };

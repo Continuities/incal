@@ -44,6 +44,8 @@ services:
       - MAIL_FROM=authweb@localhost
       - MAIL_FROM_NAME=INCAL Mailer
       - MAIL_SUBJECT=You're invited to INCAL
+      - FORGOT_SUBJECT=Reset your INCAL password
+      - RESET_WINDOW=3600000
     links:
       - db
     volumes:
